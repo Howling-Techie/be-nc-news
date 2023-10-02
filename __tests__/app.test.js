@@ -15,7 +15,6 @@ describe("GET /api", () => {
   });
   test("return an array of endpoints", () => {
     return request(app).get("/api").expect(200).then(({body}) => {
-      console.log(body.endpoints);
       expect("GET /api" in body.endpoints).toBeTruthy();
       expect("GET /api/topics" in body.endpoints).toBeTruthy();
       for (const endpointKey in body.endpoints) {
