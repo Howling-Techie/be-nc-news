@@ -46,14 +46,23 @@ describe("GET /api/articles/:article_id", () => {
   });
   test("return an article object", () => {
     return request(app).get("/api/articles/2").then(({body}) => {
-      expect(body.article).toContainAllKeys(["article_id", "title", "topic", "author", "body", "created_at", "votes", "article_img_url"]);
+      expect(body.article).toMatchObject({
+        article_id: expect.any(Number),
+        title: expect.any(String),
+        topic: expect.any(String),
+        author: expect.any(String),
+        body: expect.any(String),
+        created_at: expect.any(String),
+        votes: expect.any(Number),
+        article_img_url: expect.any(String)
+      });
     });
   });
   test("return 404 if article not found", () => {
     return request(app).get("/api/articles/100000").expect(404);
   });
   test("return 500 if article_id is not an integer", () => {
-    return request(app).get("/api/articles/first_article").expect(500);
+    return request(app).get("/api/articles/first_article").expect(400);
   });
   test("return the correct article when provided with an article_id", () => {
     return request(app).get("/api/articles/3").then(({body}) => {
@@ -68,7 +77,7 @@ describe("GET /api/articles/:article_id", () => {
         article_img_url:
           "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
       };
-      expect(body.article).toEqual(result);
+      expect(body.article).toMatchObject(result);
     });
   });
 });
