@@ -47,7 +47,7 @@ describe("GET /api/articles/:article_id", () => {
   test("return an article object", () => {
     return request(app).get("/api/articles/2").then(({body}) => {
       expect(body.article).toMatchObject({
-        article_id: expect.any(Number),
+        article_id: 2,
         title: expect.any(String),
         topic: expect.any(String),
         author: expect.any(String),
@@ -61,7 +61,7 @@ describe("GET /api/articles/:article_id", () => {
   test("return 404 if article not found", () => {
     return request(app).get("/api/articles/100000").expect(404);
   });
-  test("return 500 if article_id is not an integer", () => {
+  test("return 400 if article_id is not an integer", () => {
     return request(app).get("/api/articles/first_article").expect(400);
   });
   test("return the correct article when provided with an article_id", () => {
