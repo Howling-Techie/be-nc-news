@@ -117,3 +117,25 @@ describe("/api/articles", () => {
     });
   });
 });
+
+describe("/api/comments", () => {
+  describe("/api/comments/:comment_id", () => {
+    describe("DELETE /api/comments/:comment_id", () => {
+      test("return 204 status code on successful deletion", () => {
+        return request(app).delete("/api/comments/1").expect(204);
+      });
+      test("return 404 status code when comment not found", () => {
+        return request(app).delete("/api/comments/100000000").expect(404);
+      });
+      test("return 400 status code when passed an invalid comment id", () => {
+        return request(app).delete("/api/comments/my_comment").expect(400);
+      });
+      test("selected comment is successfully deleted", () => {
+        return request(app).delete("/api/comments/2").expect(204)
+          .then(() => {
+            return request(app).delete("/api/comments/2").expect(404);
+          });
+      });
+    });
+  });
+});
