@@ -50,16 +50,22 @@ describe("/api/articles", () => {
         expect(body.articles.length).toBe(13);
         body.articles.forEach((article) => {
           expect(article).toMatchObject({
-            article_id: expect.any(Number),
-            title: expect.any(String),
-            topic: expect.any(String),
             author: expect.any(String),
-            body: expect.any(String),
+            title: expect.any(String),
+            article_id: expect.any(Number),
+            topic: expect.any(String),
             created_at: expect.any(String),
             votes: expect.any(Number),
-            article_img_url: expect.any(String)
+            article_img_url: expect.any(String),
+            comment_count: expect.any(Number)
           });
         });
+      });
+    });
+    test("return an array of articles with the comment count", () => {
+      return request(app).get("/api/articles").then(({body}) => {
+        expect(body.articles[0].comment_count).toBe(11);
+        expect(body.articles[1].comment_count).toBe(0);
       });
     });
   });
