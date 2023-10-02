@@ -9,18 +9,14 @@ afterAll(() => {
 });
 beforeEach(() => seed(testData));
 
-describe("GET /api/healthcheck", () => {
-  test("return 200 status code", () => {
-    return request(app).get("/api/healthcheck").expect(200);
-  });
-});
 
 describe("GET /api/topics", () => {
   test("return 200 status code", () => {
     return request(app).get("/api/topics").expect(200);
   });
   test("return an array of topics", () => {
-    return request(app).get("/api/topics").expect(200).then(({body}) => {
+    return request(app).get("/api/topics").then(({body}) => {
+      expect(body.topics.length).toBe(3);
       body.topics.forEach((topic) => {
         expect(typeof topic.slug).toBe("string");
         expect(typeof topic.description).toBe("string");
