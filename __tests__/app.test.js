@@ -40,44 +40,68 @@ describe("GET /api/topics", () => {
   });
 });
 
-describe("GET /api/articles/:article_id", () => {
-  test("return 200 status code", () => {
-    return request(app).get("/api/articles/1").expect(200);
-  });
-  test("return an article object", () => {
-    return request(app).get("/api/articles/2").then(({body}) => {
-      expect(body.article).toMatchObject({
-        article_id: 2,
-        title: expect.any(String),
-        topic: expect.any(String),
-        author: expect.any(String),
-        body: expect.any(String),
-        created_at: expect.any(String),
-        votes: expect.any(Number),
-        article_img_url: expect.any(String)
+describe("/api/articles", () => {
+  describe("GET /api/articles", () => {
+    test("return 200 status code", () => {
+      return request(app).get("/api/articles").expect(200);
+    });
+    test("return an array of articles", () => {
+      return request(app).get("/api/articles").then(({body}) => {
+        expect(body.articles.length).toBe(13);
+        body.articles.forEach((article) => {
+          expect(article).toMatchObject({
+            article_id: expect.any(Number),
+            title: expect.any(String),
+            topic: expect.any(String),
+            author: expect.any(String),
+            body: expect.any(String),
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            article_img_url: expect.any(String)
+          });
+        });
       });
     });
   });
-  test("return 404 if article not found", () => {
-    return request(app).get("/api/articles/100000").expect(404);
-  });
-  test("return 400 if article_id is not an integer", () => {
-    return request(app).get("/api/articles/first_article").expect(400);
-  });
-  test("return the correct article when provided with an article_id", () => {
-    return request(app).get("/api/articles/3").then(({body}) => {
-      const result = {
-        article_id: 3,
-        title: "Eight pug gifs that remind me of mitch",
-        topic: "mitch",
-        author: "icellusedkars",
-        body: "some gifs",
-        created_at: new Date(1604394720000).toISOString(),
-        votes: 0,
-        article_img_url:
-          "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
-      };
-      expect(body.article).toMatchObject(result);
+  describe("GET /api/articles/:article_id", () => {
+    test("return 200 status code", () => {
+      return request(app).get("/api/articles/1").expect(200);
+    });
+    test("return an article object", () => {
+      return request(app).get("/api/articles/2").then(({body}) => {
+        expect(body.article).toMatchObject({
+          article_id: 2,
+          title: expect.any(String),
+          topic: expect.any(String),
+          author: expect.any(String),
+          body: expect.any(String),
+          created_at: expect.any(String),
+          votes: expect.any(Number),
+          article_img_url: expect.any(String)
+        });
+      });
+    });
+    test("return 404 if article not found", () => {
+      return request(app).get("/api/articles/100000").expect(404);
+    });
+    test("return 400 if article_id is not an integer", () => {
+      return request(app).get("/api/articles/first_article").expect(400);
+    });
+    test("return the correct article when provided with an article_id", () => {
+      return request(app).get("/api/articles/3").then(({body}) => {
+        const result = {
+          article_id: 3,
+          title: "Eight pug gifs that remind me of mitch",
+          topic: "mitch",
+          author: "icellusedkars",
+          body: "some gifs",
+          created_at: new Date(1604394720000).toISOString(),
+          votes: 0,
+          article_img_url:
+            "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+        };
+        expect(body.article).toMatchObject(result);
+      });
     });
   });
 });
