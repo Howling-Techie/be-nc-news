@@ -59,13 +59,19 @@ describe("/api/articles", () => {
             article_img_url: expect.any(String),
             comment_count: expect.any(Number)
           });
+          expect(article).not.toHaveProperty("body");
         });
       });
     });
     test("return an array of articles with the comment count", () => {
       return request(app).get("/api/articles").then(({body}) => {
-        expect(body.articles[0].comment_count).toBe(11);
-        expect(body.articles[1].comment_count).toBe(0);
+        expect(body.articles.find((article) => article.article_id === 1).comment_count).toBe(11);
+        expect(body.articles.find((article) => article.article_id === 2).comment_count).toBe(0);
+      });
+    });
+    test("return an array sorted by date descending", () => {
+      return request(app).get("/api/articles").then(({body}) => {
+        expect(body.articles).toBeSorted({key: "created_at", descending: true});
       });
     });
   });

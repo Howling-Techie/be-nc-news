@@ -26,6 +26,8 @@ exports.selectArticles = async () => {
                                   FROM articles a
                                            LEFT JOIN (SELECT article_id, COUNT(comment_id) as comment_count
                                                       FROM comments
-                                                      GROUP BY article_id) c on c.article_id = a.article_id;`);
+                                                      GROUP BY article_id) c on c.article_id = a.article_id
+                                  ORDER BY a.created_at desc;`);
+
   return results.rows.map((row) => ({...row, comment_count: +row.comment_count}));
 };
