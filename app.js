@@ -1,7 +1,7 @@
 const express = require("express");
 const {getTopics} = require("./controllers/topics.controller");
 const {readFile} = require("fs/promises");
-const {getArticle} = require("./controllers/articles.controller");
+const {getArticle, getArticles} = require("./controllers/articles.controller");
 
 const app = express();
 
@@ -11,9 +11,12 @@ app.get("/api", async (req, res) => {
   res.status(200).send({endpoints});
 });
 
+//TOPICS
 app.get("/api/topics", getTopics);
 
+//ARTICLES
 app.get("/api/articles/:article_id", getArticle);
+app.get("/api/articles", getArticles);
 
 app.use((err, req, res, next) => {
   if (err.status && err.msg) {

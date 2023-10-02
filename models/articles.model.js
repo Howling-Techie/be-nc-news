@@ -13,3 +13,9 @@ exports.selectArticle = async (article_id) => {
   }
   return results.rows[0];
 };
+
+exports.selectArticles = async () => {
+  const results = await db.query(`SELECT *
+                                  FROM articles;`);
+  return results.rows;
+};
