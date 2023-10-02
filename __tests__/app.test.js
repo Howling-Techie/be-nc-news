@@ -116,4 +116,53 @@ describe("/api/articles", () => {
       });
     });
   });
+  describe("GET /api/articles/:article_id/comments", () => {
+    test("return 200 status code", () => {
+      return request(app).get("/api/articles/1/comments").expect(200);
+    });
+    test("return an array of comment objects", () => {
+      return request(app).get("/api/articles/1/comments").then(({body}) => {
+        expect(body.comments.length).toBe(11);
+        body.comments.forEach((comment) => {
+          expect(comment).toMatchObject({
+            article_id: 1,
+            comment_id: expect.any(Number),
+            votes: expect.any(Number),
+            created_at: expect.any(String),
+            author: expect.any(String),
+            body: expect.any(String),
+          });
+        });
+      });
+    });
+    test("return 404 if article not found", () => {
+      return request(app).get("/api/articles/100000/comments").expect(404);
+    });
+    test("return 400 if article_id is not an integer", () => {
+      return request(app).get("/api/articles/first_article/comments").expect(400);
+    });
+    test("return the correct comments when provided with an article_id", () => {
+      return request(app).get("/api/articles/6/comments").then(({body}) => {
+        const result = [{
+          body: "This is a bad article name",
+          votes: 1,
+          author: "butter_bridge",
+          article_id: 6,
+          created_at: "2020-10-11T15:23:00.000Z"
+        }];
+        expect(body.comments).toMatchObject(result);
+      });
+    });
+    test("return array of comments is ordered with most recent first", () => {
+      return request(app).get("/api/articles/1/comments").then(({body}) => {
+        expect(body.comments.length).toBe(11);
+        expect(body.comments).toBeSortedBy("created_at", {descending: true});
+      });
+    });
+    test("return an empty array if the article exists but has no comments", () => {
+      return request(app).get("/api/articles/2/comments").then(({body}) => {
+        expect(body.comments.length).toBe(0);
+      });
+    });
+  });
 });

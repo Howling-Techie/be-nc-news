@@ -1,7 +1,7 @@
 const express = require("express");
 const {getTopics} = require("./controllers/topics.controller");
 const {readFile} = require("fs/promises");
-const {getArticle, getArticles} = require("./controllers/articles.controller");
+const {getArticle, getArticles, getArticleComments} = require("./controllers/articles.controller");
 
 const app = express();
 
@@ -15,8 +15,9 @@ app.get("/api", async (req, res) => {
 app.get("/api/topics", getTopics);
 
 //ARTICLES
-app.get("/api/articles/:article_id", getArticle);
 app.get("/api/articles", getArticles);
+app.get("/api/articles/:article_id", getArticle);
+app.get("/api/articles/:article_id/comments", getArticleComments);
 
 app.use((err, req, res, next) => {
   if (err.status && err.msg) {
