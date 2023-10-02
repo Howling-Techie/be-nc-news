@@ -117,11 +117,8 @@ describe("/api/articles", () => {
     });
   });
   describe("GET /api/articles/:article_id/comments", () => {
-    test("return 200 status code", () => {
-      return request(app).get("/api/articles/1/comments").expect(200);
-    });
     test("return an array of comment objects", () => {
-      return request(app).get("/api/articles/1/comments").then(({body}) => {
+      return request(app).get("/api/articles/1/comments").expect(200).then(({body}) => {
         expect(body.comments.length).toBe(11);
         body.comments.forEach((comment) => {
           expect(comment).toMatchObject({
@@ -160,7 +157,7 @@ describe("/api/articles", () => {
       });
     });
     test("return an empty array if the article exists but has no comments", () => {
-      return request(app).get("/api/articles/2/comments").then(({body}) => {
+      return request(app).get("/api/articles/2/comments").expect(200).then(({body}) => {
         expect(body.comments.length).toBe(0);
       });
     });
