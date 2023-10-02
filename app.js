@@ -4,7 +4,6 @@ const {readFile} = require("fs/promises");
 const {getArticle} = require("./controllers/articles.controller");
 
 const app = express();
-app.use(express.json());
 
 app.get("/api", async (req, res) => {
   const endpointsFile = await readFile("./endpoints.json", {encoding: "utf-8"});
