@@ -39,3 +39,36 @@ describe("GET /api/topics", () => {
     });
   });
 });
+
+describe("GET /api/articles/:article_id", () => {
+  test("return 200 status code", () => {
+    return request(app).get("/api/articles/1").expect(200);
+  });
+  test("return an article object", () => {
+    return request(app).get("/api/articles/2").then(({body}) => {
+      expect(body.article).toContainAllKeys(["article_id", "title", "topic", "author", "body", "created_at", "votes", "article_img_url"]);
+    });
+  });
+  test("return 404 if article not found", () => {
+    return request(app).get("/api/articles/100000").expect(404);
+  });
+  test("return 500 if article_id is not an integer", () => {
+    return request(app).get("/api/articles/first_article").expect(500);
+  });
+  test("return the correct article when provided with an article_id", () => {
+    return request(app).get("/api/articles/3").then(({body}) => {
+      const result = {
+        article_id: 3,
+        title: "Eight pug gifs that remind me of mitch",
+        topic: "mitch",
+        author: "icellusedkars",
+        body: "some gifs",
+        created_at: new Date(1604394720000).toISOString(),
+        votes: 0,
+        article_img_url:
+          "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+      };
+      expect(body.article).toEqual(result);
+    });
+  });
+});
