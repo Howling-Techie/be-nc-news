@@ -1,4 +1,5 @@
 const {selectArticle} = require("../models/articles.model");
+
 exports.getArticle = (req, res, next) => {
   selectArticle(req.params.article_id)
     .then((article) => {
