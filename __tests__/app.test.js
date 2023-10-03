@@ -15,8 +15,17 @@ describe("GET /api", () => {
   });
   test("return an array of endpoints", () => {
     return request(app).get("/api").expect(200).then(({body}) => {
-      expect("GET /api" in body.endpoints).toBeTruthy();
-      expect("GET /api/topics" in body.endpoints).toBeTruthy();
+      const endpoints = [
+        "GET /api",
+        "GET /api/topics",
+        "GET /api/articles",
+        "GET /api/articles/:article_id",
+        "GET /api/articles/:article_id/comments",
+        "DELETE /api/comments/:comment_id"
+      ];
+      for (const endpoint of endpoints) {
+        expect(endpoint in body.endpoints).toBeTruthy();
+      }
       for (const endpointKey in body.endpoints) {
         expect(typeof body.endpoints[endpointKey].description).toBe("string");
       }
