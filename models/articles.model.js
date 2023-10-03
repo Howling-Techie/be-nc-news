@@ -3,13 +3,11 @@ const {checkIfExists} = require("./utils.model");
 const format = require("pg-format");
 
 exports.selectArticles = async (queries) => {
-  console.log(queries);
   const {topic} = queries;
   if (topic && !(await checkIfExists("topics", "slug", topic))) {
     return Promise.reject({status: 404, msg: "Topic not found"});
   }
   const whereClause = topic ? format("WHERE topic = %L", topic) : "";
-  console.log(whereClause);
   const results = await db.query(`SELECT author,
                                          title,
                                          a.article_id,
