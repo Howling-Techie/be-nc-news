@@ -90,7 +90,7 @@ describe("/api/articles", () => {
       test("return 200 status code", () => {
         return request(app).get("/api/articles/1").expect(200);
       });
-      test("return an article object with comment count", () => {
+      test("return an article object", () => {
         return request(app).get("/api/articles/2").then(({body}) => {
           expect(body.article).toMatchObject({
             article_id: 2,
@@ -103,6 +103,11 @@ describe("/api/articles", () => {
             article_img_url: expect.any(String),
             comment_count: expect.any(Number)
           });
+        });
+      });
+      test("return an article with a comment count", () => {
+        return request(app).get("/api/articles/3").then(({body}) => {
+          expect(body.article).toHaveProperty("comment_count", 2);
         });
       });
       test("return 404 if article not found", () => {
