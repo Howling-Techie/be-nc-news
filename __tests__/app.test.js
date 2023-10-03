@@ -115,8 +115,14 @@ describe("/api/articles", () => {
             body: expect.any(String),
             created_at: expect.any(String),
             votes: expect.any(Number),
-            article_img_url: expect.any(String)
+            article_img_url: expect.any(String),
+            comment_count: expect.any(Number)
           });
+        });
+      });
+      test("return an article with a comment count", () => {
+        return request(app).get("/api/articles/3").then(({body}) => {
+          expect(body.article).toHaveProperty("comment_count", 2);
         });
       });
       test("return 404 if article not found", () => {
@@ -137,6 +143,7 @@ describe("/api/articles", () => {
             votes: 0,
             article_img_url:
               "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+            comment_count: 2
           };
           expect(body.article).toMatchObject(result);
         });
