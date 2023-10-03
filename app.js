@@ -3,6 +3,7 @@ const {getTopics} = require("./controllers/topics.controller");
 const {readFile} = require("fs/promises");
 const {getArticle, getArticles, getArticleComments} = require("./controllers/articles.controller");
 const {deleteComment} = require("./controllers/comments.controller");
+const {getUsers} = require("./controllers/users.controller");
 
 const app = express();
 
@@ -22,6 +23,9 @@ app.get("/api/articles/:article_id/comments", getArticleComments);
 
 //COMMENTS
 app.delete("/api/comments/:comment_id", deleteComment);
+
+//USERS
+app.get("/api/users", getUsers);
 
 app.use((err, req, res, next) => {
   if (err.status && err.msg) {

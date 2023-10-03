@@ -17,6 +17,7 @@ describe("GET /api", () => {
     return request(app).get("/api").expect(200).then(({body}) => {
       expect("GET /api" in body.endpoints).toBeTruthy();
       expect("GET /api/topics" in body.endpoints).toBeTruthy();
+      expect("GET /api/users" in body.endpoints).toBeTruthy();
       for (const endpointKey in body.endpoints) {
         expect(typeof body.endpoints[endpointKey].description).toBe("string");
       }
@@ -180,6 +181,23 @@ describe("/api/comments", () => {
           .then(() => {
             return request(app).delete("/api/comments/2").expect(404);
           });
+      });
+    });
+  });
+});
+
+describe("api/users", () => {
+  describe("GET /api/users", () => {
+    test("200 - return an array of users", () => {
+      return request(app).get("/api/users").expect(200).then(({body}) => {
+        expect(body.users.length).toBe(4);
+        body.users.forEach((user) => {
+          expect(user).toMatchObject({
+            username: expect.any(String),
+            name: expect.any(String),
+            avatar_url: expect.any(String)
+          });
+        });
       });
     });
   });
