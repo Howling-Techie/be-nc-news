@@ -1,4 +1,5 @@
 const db = require("../db/connection");
+const {checkIfExists} = require("./utils.model");
 
 exports.selectArticles = async () => {
   const results = await db.query(`SELECT author,
@@ -33,7 +34,6 @@ exports.selectArticle = async (article_id) => {
 };
 
 exports.selectArticleComments = async (article_id) => {
-
   if (Number.isNaN(+article_id)) {
     return Promise.reject({status: 400, msg: "Invalid article_id datatype"});
   }
@@ -51,6 +51,29 @@ exports.selectArticleComments = async (article_id) => {
       FROM comments
       WHERE article_id = $1
       ORDER BY created_at desc;`, [article_id]);
-  
+
   return commentResults.rows;
+};
+
+exports.insertArticleComment = async (article_id, comment) => {
+  if (Number.isNaN(+article_id)) {
+    return Promise.reject({status: 400, msg: "Invalid article_id datatype"});
+  }
+
+  if (!("username" in comment)) {
+    return Promise.reject({status: 400, msg: "Request missing username"});
+  }
+  if (!("body" in comment)) {
+    return Promise.reject({status: 400, msg: "Request missing body"});
+  }
+
+  if (!(await checkIfExists("articles", "article_id", article_id))) {
+    return Promise.reject({status: 404, msg: "Article not found"});
+  }
+  if (!(await checkIfExists("users", "username", comment.username))) {
+    return Promise.reject({status: 404, msg: "User not found"});
+  }
+  return (await db.query(`INSERT INTO comments(article_id, body, author)
+                          VALUES ($1, $2, $3)
+                          RETURNING *;`, [article_id, comment.body, comment.username])).rows[0];
 };
