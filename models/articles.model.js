@@ -1,5 +1,6 @@
 const db = require("../db/connection");
 const {checkIfExists} = require("./utils.model");
+const format = require("pg-format");
 
 exports.selectArticles = async () => {
   const results = await db.query(`SELECT author,
@@ -76,4 +77,23 @@ exports.insertArticleComment = async (article_id, comment) => {
   return (await db.query(`INSERT INTO comments(article_id, body, author)
                           VALUES ($1, $2, $3)
                           RETURNING *;`, [article_id, comment.body, comment.username])).rows[0];
+};
+
+exports.updateArticle = async (article_id, inc_votes) => {
+  if (inc_votes === undefined) {
+    return Promise.reject({status: 400, msg: "Request missing inc_votes"});
+  }
+  if (Number.isNaN(+inc_votes) || Math.floor(inc_votes) !== inc_votes) {
+    return Promise.reject({status: 400, msg: "Invalid inc_votes datatype"});
+  }
+  if (inc_votes === 0) {
+    return Promise.reject({status: 304, msg: "Article not changed"});
+  }
+  if (!(await checkIfExists("articles", "article_id", article_id))) {
+    return Promise.reject({status: 404, msg: "Article not found"});
+  }
+
+  const query = format("UPDATE articles SET votes = votes + %s WHERE article_id = %s RETURNING *;"
+    , inc_votes, article_id);
+  return (await db.query(query)).rows[0];
 };
