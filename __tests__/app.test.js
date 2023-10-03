@@ -306,10 +306,15 @@ describe("/api/articles", () => {
             });
           });
       });
-      test("Return 400 on missing inc_votes", () => {
+      test("Return 304 when no properties are provided", () => {
         return request(app).patch("/api/articles/3")
-          .send({title: "fast money today!"})
-          .expect(400).then(({body}) => expect(body.msg).toBe("Request missing inc_votes"));
+          .send({})
+          .expect(304);
+      });
+      test("Return 304 when no properties are provided that can be patched", () => {
+        return request(app).patch("/api/articles/3")
+          .send({icon: "robot"})
+          .expect(304);
       });
       test("Return 400 when inc_votes has an invalid datatype", () => {
         return request(app).patch("/api/articles/3")

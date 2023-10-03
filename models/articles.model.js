@@ -79,9 +79,13 @@ exports.insertArticleComment = async (article_id, comment) => {
                           RETURNING *;`, [article_id, comment.body, comment.username])).rows[0];
 };
 
-exports.updateArticle = async (article_id, inc_votes) => {
+exports.updateArticle = async (article_id, body) => {
+  if (!body || body === {}) {
+    return Promise.reject({status: 304, msg: "Article not changed"});
+  }
+  const {inc_votes} = body;
   if (inc_votes === undefined) {
-    return Promise.reject({status: 400, msg: "Request missing inc_votes"});
+    return Promise.reject({status: 304, msg: "Article not changed"});
   }
   if (Number.isNaN(+inc_votes) || Math.floor(inc_votes) !== inc_votes) {
     return Promise.reject({status: 400, msg: "Invalid inc_votes datatype"});
