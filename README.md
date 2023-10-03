@@ -10,17 +10,12 @@ The database itself is a Postgres database, which the API interacts with through
 
 ## How to set up
 
-Clone or download the repository
-
-For testing or development, ensure you have Postgres installed
-
-Use either NPM or Yarn to install all dependencies
-
-Run `setup-dbs` to create the required database
-
-Run `seed` to insert all the initial data into the created databases.
-
-`test` will run a series of functions that will test all endpoints to ensure they are functioning as intended.
+1. Clone or download the repository
+2. For testing or development, ensure you have Postgres installed
+3. Use either NPM or Yarn to install all dependencies
+4. Run `setup-dbs` to create the required database
+5. Run `seed` to insert all the initial data into the created databases.
+6. `test` will run a series of functions that will test all endpoints to ensure they are functioning as intended.
 
 ## Environment setup
 
