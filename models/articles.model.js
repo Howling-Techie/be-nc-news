@@ -64,7 +64,7 @@ exports.insertArticleComment = async (article_id, comment) => {
     return Promise.reject({status: 400, msg: "Request missing username"});
   }
   if (!("body" in comment)) {
-    return Promise.reject({status: 400, msg: "Request missing comment"});
+    return Promise.reject({status: 400, msg: "Request missing body"});
   }
 
   if (!(await checkIfExists("articles", "article_id", article_id))) {

@@ -17,6 +17,7 @@ describe("GET /api", () => {
     return request(app).get("/api").expect(200).then(({body}) => {
       expect("GET /api" in body.endpoints).toBeTruthy();
       expect("GET /api/topics" in body.endpoints).toBeTruthy();
+      expect("POST /api/articles/:article_id/comments" in body.endpoints).toBeTruthy();
       for (const endpointKey in body.endpoints) {
         expect(typeof body.endpoints[endpointKey].description).toBe("string");
       }
@@ -180,6 +181,22 @@ describe("/api/articles", () => {
           });
         });
       });
+      test("Extra properties are ignored in send body", () => {
+        return request(app).post("/api/articles/1/comments").send({
+          username: "lurker",
+          body: "I wanted to say more!",
+          originalMessage: "My first post!"
+        }).expect(201).then(({body}) => {
+          expect(body.comment).toMatchObject({
+            article_id: 1,
+            comment_id: expect.any(Number),
+            votes: 0,
+            created_at: expect.any(String),
+            author: "lurker",
+            body: "I wanted to say more!",
+          });
+        });
+      });
       test("New comment is stored on the database", () => {
         return request(app).post("/api/articles/2/comments")
           .send({
@@ -188,33 +205,37 @@ describe("/api/articles", () => {
           }).then(() => {
             return request(app).get("/api/articles/2/comments")
               .then(({body}) => {
-                console.log(body.comments);
                 expect(body.comments.filter((comment) => comment.author === "lurker").length).toBe(1);
               });
           });
       });
-      test("Respond with 400 if object is missing properties", () => {
+      test("Respond with 400 if object is missing username", () => {
         return request(app).post("/api/articles/1/comments").send({
           body: "Send me a DM for deets"
-        }).expect(400);
+        }).expect(400).then(({body}) => expect(body.msg).toBe("Request missing username"));
+      });
+      test("Respond with 400 if object is missing body", () => {
+        return request(app).post("/api/articles/1/comments").send({
+          username: "lurker"
+        }).expect(400).then(({body}) => expect(body.msg).toBe("Request missing body"));
       });
       test("Respond with 404 if the article cannot be found", () => {
         return request(app).post("/api/articles/1000/comments").send({
           username: "lurker",
           body: "My second post!"
-        }).expect(404);
+        }).expect(404).then(({body}) => expect(body.msg).toBe("Article not found"));
       });
       test("Respond with 404 if the user cannot be found", () => {
-        return request(app).post("/api/articles/1000/comments").send({
+        return request(app).post("/api/articles/1/comments").send({
           username: "newbie",
           body: "hiii"
-        }).expect(404);
+        }).expect(404).then(({body}) => expect(body.msg).toBe("User not found"));
       });
       test("Respond with 400 if the article id is not an integer", () => {
         return request(app).post("/api/articles/about_me/comments").send({
           username: "lurker",
           body: "My first article"
-        }).expect(400);
+        }).expect(400).then(({body}) => expect(body.msg).toBe("Invalid article_id datatype"));
       });
     });
   });
