@@ -86,6 +86,20 @@ describe("/api/articles", () => {
           expect(body.articles).toBeSorted({key: "created_at", descending: true});
         });
       });
+      test("return an array filtered by the provided topic", () => {
+        return request(app).get("/api/articles?topic=cats").then(({body}) => {
+          expect(body.articles.filter(article => article.topic !== "cats").length === 0).toBeTruthy();
+          expect(body.articles.filter(article => article.topic === "cats").length === 1).toBeTruthy();
+        });
+      });
+      test("return 404 if the topic does not exist", () => {
+        return request(app).get("/api/articles?topic=dogs")
+          .expect(404).then(({body}) => expect(body.msg).toBe("Topic not found"));
+      });
+      test("return an empty array if no articles found in topic", () => {
+        return request(app).get("/api/articles?topic=paper")
+          .expect(200).then(({body}) => expect(body.articles.length).toBe(0));
+      });
     });
     describe("GET /api/articles/:article_id", () => {
       test("return 200 status code", () => {
