@@ -90,7 +90,7 @@ describe("/api/articles", () => {
       test("return 200 status code", () => {
         return request(app).get("/api/articles/1").expect(200);
       });
-      test("return an article object", () => {
+      test("return an article object with comment count", () => {
         return request(app).get("/api/articles/2").then(({body}) => {
           expect(body.article).toMatchObject({
             article_id: 2,
@@ -100,7 +100,8 @@ describe("/api/articles", () => {
             body: expect.any(String),
             created_at: expect.any(String),
             votes: expect.any(Number),
-            article_img_url: expect.any(String)
+            article_img_url: expect.any(String),
+            comment_count: expect.any(Number)
           });
         });
       });
@@ -122,6 +123,7 @@ describe("/api/articles", () => {
             votes: 0,
             article_img_url:
               "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+            comment_count: 2
           };
           expect(body.article).toMatchObject(result);
         });
