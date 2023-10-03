@@ -1,7 +1,15 @@
 const db = require("../db/connection");
 const {checkIfExists} = require("./utils.model");
+const format = require("pg-format");
 
-exports.selectArticles = async () => {
+exports.selectArticles = async (queries) => {
+  console.log(queries);
+  const {topic} = queries;
+  if (topic && !(await checkIfExists("topics", "slug", topic))) {
+    return Promise.reject({status: 404, msg: "Topic not found"});
+  }
+  const whereClause = topic ? format("WHERE topic = %L", topic) : "";
+  console.log(whereClause);
   const results = await db.query(`SELECT author,
                                          title,
                                          a.article_id,
@@ -14,6 +22,7 @@ exports.selectArticles = async () => {
                                            LEFT JOIN (SELECT article_id, COUNT(comment_id) as comment_count
                                                       FROM comments
                                                       GROUP BY article_id) c on c.article_id = a.article_id
+                                      ${whereClause}
                                   ORDER BY a.created_at desc;`);
 
   return results.rows.map((row) => ({...row, comment_count: +row.comment_count}));
