@@ -210,49 +210,242 @@
     },
     "/api/articles": {
       "get": {
-        "summary": "GET api/articles",
+        "summary": "Get an array of all articles",
+        "parameters": [
+          {
+            "name": "sort_by",
+            "required": false,
+            "in": "query",
+            "description": "Column to sort data by",
+            "schema": {
+              "type": "string",
+              "default": "created_at",
+              "enum": [
+                "article_id",
+                "title",
+                "topic",
+                "author",
+                "created_at",
+                "votes"
+              ]
+            }
+          },
+          {
+            "name": "order",
+            "required": false,
+            "in": "query",
+            "description": "Specify result ordering",
+            "schema": {
+              "type": "string",
+              "default": "desc",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "topics": {
+                      "type": "array",
+                      "description": "Array of articles",
+                      "items": {
+                        "type": "object",
+                        "description": "An article from the site",
+                        "properties": {
+                          "author": {
+                            "type": "string",
+                            "description": "Username of the author"
+                          },
+                          "title": {
+                            "type": "string",
+                            "description": "Title of the article"
+                          },
+                          "article_id": {
+                            "type": "integer",
+                            "description": "The unique article ID"
+                          },
+                          "topic": {
+                            "type": "string",
+                            "description": "Topic this article falls under"
+                          },
+                          "created_at": {
+                            "type": "string",
+                            "description": "Timestamp of article's creation"
+                          },
+                          "votes": {
+                            "type": "integer",
+                            "description": "Total score of the article's votes"
+                          },
+                          "article_img_url": {
+                            "type": "string",
+                            "description": "URL of the article's image"
+                          },
+                          "comment_count": {
+                            "type": "integer",
+                            "description": "How many comments have been received"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
     },
     "/api/articles/{article_id}": {
       "get": {
-        "summary": "GET api/articles/{article_id}",
+        "summary": "Get an article specified by its unique ID",
         "parameters": [
           {
             "name": "article_id",
             "in": "path",
-            "required": false
+            "required": true
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "An article from the site",
+                  "properties": {
+                    "article_id": {
+                      "type": "integer",
+                      "description": "The unique article ID"
+                    },
+                    "author": {
+                      "type": "string",
+                      "description": "Username of the author"
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "Title of the article"
+                    },
+                    "topic": {
+                      "type": "string",
+                      "description": "Topic this article falls under"
+                    },
+                    "body": {
+                      "type": "string",
+                      "description": "The contents of the article"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "description": "Timestamp of article's creation"
+                    },
+                    "votes": {
+                      "type": "integer",
+                      "description": "Total score of the article's votes"
+                    },
+                    "article_img_url": {
+                      "type": "string",
+                      "description": "URL of the article's image"
+                    },
+                    "comment_count": {
+                      "type": "integer",
+                      "description": "How many comments have been received"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       },
       "patch": {
-        "summary": "PATCH api/articles/{article_id}",
+        "summary": "Update an article's vote count",
         "parameters": [
           {
             "name": "article_id",
             "in": "path",
-            "required": false
+            "required": true
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "inc_votes": {
+                    "required": true,
+                    "type": "integer",
+                    "description": "Amount to increment vote count by"
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "An article from the site",
+                  "properties": {
+                    "article_id": {
+                      "type": "integer",
+                      "description": "The unique article ID"
+                    },
+                    "author": {
+                      "type": "string",
+                      "description": "Username of the author"
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "Title of the article"
+                    },
+                    "topic": {
+                      "type": "string",
+                      "description": "Topic this article falls under"
+                    },
+                    "body": {
+                      "type": "string",
+                      "description": "The contents of the article"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "description": "Timestamp of article's creation"
+                    },
+                    "votes": {
+                      "type": "integer",
+                      "description": "Total score of the article's votes"
+                    },
+                    "article_img_url": {
+                      "type": "string",
+                      "description": "URL of the article's image"
+                    },
+                    "comment_count": {
+                      "type": "integer",
+                      "description": "How many comments have been received"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
     },
     "/api/articles/{article_id}/comments": {
       "get": {
-        "summary": "GET api/articles/{article_id}/comments",
+        "summary": "Get an array of an article's comments",
         "parameters": [
           {
             "name": "article_id",
@@ -273,7 +466,7 @@
                       "description": "Array of comments",
                       "items": {
                         "type": "object",
-                        "description": "The updated comment",
+                        "description": "Comment",
                         "properties": {
                           "comment_id": {
                             "type": "integer"
@@ -304,27 +497,81 @@
         }
       },
       "post": {
-        "summary": "POST api/articles/{article_id}/comments",
+        "summary": "Post a new comment to an article",
         "parameters": [
           {
             "name": "article_id",
             "in": "path",
-            "required": false
+            "required": true
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "required": true,
+                    "type": "string",
+                    "description": "Username posting the comment"
+                  },
+                  "body": {
+                    "required": true,
+                    "type": "string",
+                    "description": "The contents of the comment"
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "comment": {
+                      "type": "object",
+                      "description": "The newly created comment",
+                      "properties": {
+                        "comment_id": {
+                          "type": "integer"
+                        },
+                        "body": {
+                          "type": "string"
+                        },
+                        "votes": {
+                          "type": "integer"
+                        },
+                        "author": {
+                          "type": "string"
+                        },
+                        "article_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
     },
     "/api": {
       "get": {
-        "summary": "GET api",
+        "summary": "Gets the api documentation",
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Success"
           }
         }
       }
