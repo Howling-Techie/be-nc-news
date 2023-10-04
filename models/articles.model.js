@@ -57,7 +57,14 @@ exports.selectArticle = async (article_id) => {
   return results.rows[0];
 };
 
-exports.selectArticleComments = async (article_id) => {
+exports.selectArticleComments = async (article_id, queries) => {
+  const {limit = 10, p = 1} = queries;
+  if (Number.isNaN(+limit) || limit <= 0 || !Number.isInteger(+limit)) {
+    return Promise.reject({status: 400, msg: "Invalid limit datatype"});
+  }
+  if (Number.isNaN(+p) || p <= 0 || !Number.isInteger(+p)) {
+    return Promise.reject({status: 400, msg: "Invalid p datatype"});
+  }
   if (Number.isNaN(+article_id)) {
     return Promise.reject({status: 400, msg: "Invalid article_id datatype"});
   }
@@ -74,7 +81,8 @@ exports.selectArticleComments = async (article_id) => {
       SELECT *
       FROM comments
       WHERE article_id = $1
-      ORDER BY created_at desc;`, [article_id]);
+      ORDER BY created_at desc
+      LIMIT $2 OFFSET $3;`, [article_id, limit, ((p - 1) * limit)]);
 
   return commentResults.rows;
 };

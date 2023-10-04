@@ -26,7 +26,7 @@ exports.getArticle = (req, res, next) => {
 };
 
 exports.getArticleComments = (req, res, next) => {
-  selectArticleComments(req.params.article_id)
+  selectArticleComments(req.params.article_id, req.query)
     .then((comments) => {
       res.status(200).send({comments});
     })

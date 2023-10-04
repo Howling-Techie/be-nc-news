@@ -205,7 +205,7 @@ describe("/api/articles", () => {
     describe("GET /api/articles/:article_id/comments", () => {
       test("return an array of comment objects", () => {
         return request(app).get("/api/articles/1/comments").expect(200).then(({body}) => {
-          expect(body.comments.length).toBe(11);
+          expect(body.comments.length).toBe(10);
           body.comments.forEach((comment) => {
             expect(comment).toMatchObject({
               article_id: 1,
@@ -238,13 +238,36 @@ describe("/api/articles", () => {
       });
       test("return array of comments is ordered with most recent first", () => {
         return request(app).get("/api/articles/1/comments").then(({body}) => {
-          expect(body.comments.length).toBe(11);
+          expect(body.comments.length).toBe(10);
           expect(body.comments).toBeSortedBy("created_at", {descending: true});
         });
       });
       test("return an empty array if the article exists but has no comments", () => {
         return request(app).get("/api/articles/2/comments").expect(200).then(({body}) => {
           expect(body.comments.length).toBe(0);
+        });
+      });
+      describe("pagination", () => {
+        test("return an array limited to the value specified", () => {
+          return request(app).get("/api/articles/1/comments?limit=5").then(({body}) => {
+            expect(body.comments.length).toBe(5);
+          });
+        });
+        test("return the second page of results when when p is 2", () => {
+          return request(app).get("/api/articles/1/comments?p=2").then(({body}) => {
+            expect(body.comments.length).toBe(1);
+          });
+        });
+        test("limit is taken into account when calculating pages", () => {
+          return request(app).get("/api/articles/1/comments?limit=3&p=4").then(({body}) => {
+            expect(body.comments.length).toBe(2);
+          });
+        });
+        test("return 400 if an invalid limit is provided", () => {
+          return request(app).get("/api/articles/1/comments?limit=1.5").expect(400);
+        });
+        test("return 400 if an invalid p is provided", () => {
+          return request(app).get("/api/articles/1/comments?p=-3").expect(400);
         });
       });
     });
