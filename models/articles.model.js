@@ -3,9 +3,16 @@ const {checkIfExists} = require("./utils.model");
 const format = require("pg-format");
 
 exports.selectArticles = async (queries) => {
-  const {topic} = queries;
+  const {topic, sort_by = "created_at", order = "desc"} = queries;
   if (topic && !(await checkIfExists("topics", "slug", topic))) {
     return Promise.reject({status: 404, msg: "Topic not found"});
+  }
+  if (!(order === "asc" || order === "desc")) {
+    return Promise.reject({status: 400, msg: "Invalid order"});
+  }
+  const validSorts = ["article_id", "title", "topic", "author", "created_at", "votes"];
+  if (!validSorts.includes(sort_by)) {
+    return Promise.reject({status: 400, msg: "Invalid sort_by"});
   }
   const whereClause = topic ? format("WHERE topic = %L", topic) : "";
   return (await db.query(`SELECT author,
@@ -22,7 +29,7 @@ exports.selectArticles = async (queries) => {
                                               FROM comments
                                               GROUP BY article_id) c on c.article_id = a.article_id
                               ${whereClause}
-                          ORDER BY a.created_at desc;`)).rows;
+                          ORDER BY a.${sort_by} ${order};`)).rows;
 };
 
 exports.selectArticle = async (article_id) => {
