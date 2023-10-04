@@ -3,7 +3,13 @@ const {checkIfExists} = require("./utils.model");
 const format = require("pg-format");
 
 exports.selectArticles = async (queries) => {
-  const {topic, sort_by = "created_at", order = "desc"} = queries;
+  const {topic, sort_by = "created_at", order = "desc", limit = 10, p = 1} = queries;
+  if (Number.isNaN(+limit) || limit <= 0 || !Number.isInteger(+limit)) {
+    return Promise.reject({status: 400, msg: "Invalid limit datatype"});
+  }
+  if (Number.isNaN(+p) || p <= 0 || !Number.isInteger(+p)) {
+    return Promise.reject({status: 400, msg: "Invalid p datatype"});
+  }
   if (topic && !(await checkIfExists("topics", "slug", topic))) {
     return Promise.reject({status: 404, msg: "Topic not found"});
   }
@@ -29,7 +35,8 @@ exports.selectArticles = async (queries) => {
                                               FROM comments
                                               GROUP BY article_id) c on c.article_id = a.article_id
                               ${whereClause}
-                          ORDER BY a.${sort_by} ${order};`)).rows;
+                          ORDER BY a.${sort_by} ${order}
+                          LIMIT ${limit} OFFSET ${limit * (p - 1)};`)).rows;
 };
 
 exports.selectArticle = async (article_id) => {
