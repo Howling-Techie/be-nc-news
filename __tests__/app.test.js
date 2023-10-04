@@ -32,17 +32,43 @@ describe("GET /api", () => {
   });
 });
 
-describe("GET /api/topics", () => {
-  test("return 200 status code", () => {
-    return request(app).get("/api/topics").expect(200);
-  });
-  test("return an array of topics", () => {
-    return request(app).get("/api/topics").then(({body}) => {
-      expect(body.topics.length).toBe(3);
-      body.topics.forEach((topic) => {
-        expect(typeof topic.slug).toBe("string");
-        expect(typeof topic.description).toBe("string");
+describe("/api/topics", () => {
+  describe("GET", () => {
+    test("return 200 status code", () => {
+      return request(app).get("/api/topics").expect(200);
+    });
+    test("return an array of topics", () => {
+      return request(app).get("/api/topics").then(({body}) => {
+        expect(body.topics.length).toBe(3);
+        body.topics.forEach((topic) => {
+          expect(typeof topic.slug).toBe("string");
+          expect(typeof topic.description).toBe("string");
+        });
       });
+    });
+  });
+  describe("POST", () => {
+    test("201 - return the newly created topic", () => {
+      return request(app).post("/api/topics").send({
+        slug: "Intro to front end",
+        description: "Articles to help newbies get to grips with front end development"
+      }).expect(201).then(({body}) => {
+        expect(body.topic).toMatchObject({
+          slug: "Intro to front end",
+          description: "Articles to help newbies get to grips with front end development"
+        });
+      });
+    });
+    test("403 - reject attempts to insert topics that already exist", () => {
+      return request(app).post("/api/topics").send({
+        slug: "cats",
+        description: "You know them, you love them"
+      }).expect(403);
+    });
+    test("400 - reject attempts to insert topics with missing properties", () => {
+      return request(app).post("/api/topics").send({
+        description: "Like cats, but different"
+      }).expect(400);
     });
   });
 });
