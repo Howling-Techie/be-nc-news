@@ -15,22 +15,18 @@ describe("GET /api", () => {
   });
   test("return an array of endpoints", () => {
     return request(app).get("/api").expect(200).then(({body}) => {
-      const endpoints = [
-        "GET /api",
-        "GET /api/topics",
-        "GET /api/articles",
-        "GET /api/articles/:article_id",
-        "PATCH /api/articles/:article_id",
-        "GET /api/articles/:article_id/comments",
-        "POST /api/articles/:article_id/comments",
-        "GET /api/users",
-        "DELETE /api/comments/:comment_id",
+      const paths = [
+        "/api/topics",
+        "/api/users",
+        "/api/users/{username}",
+        "/api/comments/{comment_id}",
+        "/api/articles",
+        "/api/articles/{article_id}",
+        "/api/articles/{article_id}/comments",
+        "/api"
       ];
-      for (const endpoint of endpoints) {
-        expect(endpoint in body.endpoints).toBeTruthy();
-      }
-      for (const endpointKey in body.endpoints) {
-        expect(typeof body.endpoints[endpointKey].description).toBe("string");
+      for (const pathName of paths) {
+        expect(body.endpoints.paths.hasOwnProperty(pathName)).toBeTruthy();
       }
     });
   });
