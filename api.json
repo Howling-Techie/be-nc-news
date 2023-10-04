@@ -46,6 +46,57 @@
             }
           }
         }
+      },
+      "post": {
+        "summary": "Post a new topic to the server",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "slug": {
+                    "type": "string",
+                    "description": "Name of the topic"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Description of the new topic"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The newly created topic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "slug": {
+                      "type": "string",
+                      "description": "Name of the topic"
+                    },
+                    "description": {
+                      "type": "string",
+                      "description": "Description of the new topic"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Topic already exists"
+          },
+          "400": {
+            "description": "Missing properties from body"
+          }
+        }
       }
     },
     "/api/users": {
@@ -93,7 +144,10 @@
           {
             "name": "username",
             "in": "path",
-            "required": true
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -123,6 +177,9 @@
                 }
               }
             }
+          },
+          "404": {
+            "description": "User not found"
           }
         }
       }
@@ -134,12 +191,18 @@
           {
             "name": "comment_id",
             "in": "path",
-            "required": true
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
           }
         ],
         "responses": {
           "204": {
             "description": "Success"
+          },
+          "404": {
+            "description": "Comment not found"
           }
         }
       },
@@ -149,17 +212,20 @@
           {
             "name": "comment_id",
             "in": "path",
-            "required": true
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
           }
         ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
                   "inc_votes": {
-                    "required": true,
                     "type": "integer",
                     "description": "Amount to increment vote count by"
                   }
@@ -204,6 +270,15 @@
                 }
               }
             }
+          },
+          "304": {
+            "description": "No changes made"
+          },
+          "404": {
+            "description": "Comment not found"
+          },
+          "400": {
+            "description": "Invalid datatype in body"
           }
         }
       }
@@ -299,6 +374,9 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Invalid query parameters"
           }
         }
       }
@@ -310,7 +388,10 @@
           {
             "name": "article_id",
             "in": "path",
-            "required": true
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
           }
         ],
         "responses": {
@@ -362,6 +443,12 @@
                 }
               }
             }
+          },
+          "404": {
+            "description": "Article not found"
+          },
+          "400": {
+            "description": "Article_id must be a positive integer"
           }
         }
       },
@@ -371,17 +458,20 @@
           {
             "name": "article_id",
             "in": "path",
-            "required": true
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
           }
         ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
                   "inc_votes": {
-                    "required": true,
                     "type": "integer",
                     "description": "Amount to increment vote count by"
                   }
@@ -439,6 +529,15 @@
                 }
               }
             }
+          },
+          "304": {
+            "description": "No changes made"
+          },
+          "404": {
+            "description": "Article not found"
+          },
+          "400": {
+            "description": "Invalid datatype in body"
           }
         }
       }
@@ -450,7 +549,10 @@
           {
             "name": "article_id",
             "in": "path",
-            "required": true
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
           }
         ],
         "responses": {
@@ -493,6 +595,12 @@
                 }
               }
             }
+          },
+          "404": {
+            "description": "Article not found"
+          },
+          "400": {
+            "description": "Article_id must be a positive integer"
           }
         }
       },
@@ -502,22 +610,24 @@
           {
             "name": "article_id",
             "in": "path",
-            "required": true
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
           }
         ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
                   "username": {
-                    "required": true,
                     "type": "string",
                     "description": "Username posting the comment"
                   },
                   "body": {
-                    "required": true,
                     "type": "string",
                     "description": "The contents of the comment"
                   }
@@ -527,7 +637,7 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "description": "Success",
             "content": {
               "application/json": {
@@ -562,6 +672,15 @@
                 }
               }
             }
+          },
+          "304": {
+            "description": "No changes made"
+          },
+          "404": {
+            "description": "Article or user not found"
+          },
+          "400": {
+            "description": "Invalid datatype in body"
           }
         }
       }

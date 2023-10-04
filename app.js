@@ -5,7 +5,9 @@ const apiRouter = require("./routes/api.router");
 app.use(express.json());
 
 app.use("/api", apiRouter);
-
+app.get("/", (req, res) => {
+  res.sendFile("./api.html");
+});
 app.use((err, req, res, next) => {
   if (err.status && err.msg) {
     res.status(err.status).send({msg: err.msg});
