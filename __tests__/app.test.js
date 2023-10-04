@@ -383,4 +383,29 @@ describe("api/users", () => {
       });
     });
   });
+  describe("GET /api/users/:username", () => {
+    test("200 - return a user object", () => {
+      return request(app).get("/api/users/butter_bridge").then(({body}) => {
+        expect(body.user).toMatchObject({
+          username: "butter_bridge",
+          avatar_url: expect.any(String),
+          name: expect.any(String)
+        });
+      });
+    });
+    test("return 404 if user not found", () => {
+      return request(app).get("/api/users/howling_techie").expect(404);
+    });
+    test("return the correct user when provided with a username", () => {
+      return request(app).get("/api/users/butter_bridge").then(({body}) => {
+        const result = {
+          username: "butter_bridge",
+          name: "jonny",
+          avatar_url:
+            "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg"
+        };
+        expect(body.user).toMatchObject(result);
+      });
+    });
+  });
 });
