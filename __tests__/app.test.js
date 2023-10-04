@@ -365,6 +365,71 @@ describe("/api/comments", () => {
           });
       });
     });
+    describe("PATCH /api/comments/:comment_id", () => {
+      test("200 - Return the altered object on a successful patch", () => {
+        return request(app).patch("/api/comments/1")
+          .send({inc_votes: 1})
+          .expect(200)
+          .then(({body}) => {
+            expect(body.comment).toMatchObject({
+              comment_id: 1,
+              body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+              votes: 17,
+              author: "butter_bridge",
+              article_id: 9,
+              created_at: "2020-04-06T12:17:00.000Z",
+            });
+          });
+      });
+      test("200 - Allow negative votes", () => {
+        return request(app).patch("/api/comments/2")
+          .send({inc_votes: -30})
+          .expect(200)
+          .then(({body}) => {
+            expect(body.comment).toHaveProperty(
+              "votes", -16);
+          });
+      });
+      test("Return 404 on comment not found", () => {
+        return request(app).patch("/api/comments/1000")
+          .send({inc_votes: 1})
+          .expect(404).then(({body}) => expect(body.msg).toBe("Comment not found"));
+      });
+      test("Return 304 when no change has been made", () => {
+        return request(app).patch("/api/comments/3")
+          .send({inc_votes: 0})
+          .expect(304);
+      });
+      test("200 - Ignore additional properties when patching", () => {
+        return request(app).patch("/api/comments/4")
+          .send({inc_votes: 10, reaction: "wink"})
+          .expect(200).then(({body}) => {
+            expect(body.comment).toMatchObject({
+              comment_id: 4,
+              body: " I carry a log — yes. Is it funny to you? It is not to me.",
+              votes: -90,
+              author: "icellusedkars",
+              article_id: 1,
+              created_at: "2020-02-23T12:01:00.000Z",
+            },);
+          });
+      });
+      test("Return 304 when no properties are provided", () => {
+        return request(app).patch("/api/comments/5")
+          .send({})
+          .expect(304);
+      });
+      test("Return 304 when no properties are provided that can be patched", () => {
+        return request(app).patch("/api/comments/6")
+          .send({react: "wave"})
+          .expect(304);
+      });
+      test("Return 400 when inc_votes has an invalid datatype", () => {
+        return request(app).patch("/api/comments/7")
+          .send({inc_votes: "all of them"})
+          .expect(400).then(({body}) => expect(body.msg).toBe("Invalid inc_votes datatype"));
+      });
+    });
   });
 });
 
