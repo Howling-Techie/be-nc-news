@@ -81,15 +81,43 @@ describe("/api/articles", () => {
           expect(body.articles.find((article) => article.article_id === 2).comment_count).toBe(0);
         });
       });
-      test("return an array sorted by date descending", () => {
+      test("return an array sorted by date descending by default", () => {
         return request(app).get("/api/articles").then(({body}) => {
           expect(body.articles).toBeSorted({key: "created_at", descending: true});
+        });
+      });
+      test("return an array sorted by date in the order specified", () => {
+        return request(app).get("/api/articles?order=asc").then(({body}) => {
+          expect(body.articles).toBeSorted({key: "created_at", descending: false});
+        });
+      });
+      test("return an array sorted by the column specified in descending order", () => {
+        return request(app).get("/api/articles?sort_by=votes").then(({body}) => {
+          expect(body.articles).toBeSorted({key: "votes", descending: true});
+        });
+      });
+      test("return 400 if an invalid order is provided", () => {
+        return request(app).get("/api/articles?order=mixed").expect(400);
+      });
+      test("return 400 if an invalid sort_by is provided", () => {
+        return request(app).get("/api/articles?sort_by=tone").expect(400);
+      });
+      test("return an array sorted by a column in the order specified", () => {
+        return request(app).get("/api/articles?sort_by=title&order=asc").then(({body}) => {
+          expect(body.articles).toBeSorted({key: "title", descending: false});
         });
       });
       test("return an array filtered by the provided topic", () => {
         return request(app).get("/api/articles?topic=cats").then(({body}) => {
           expect(body.articles.filter(article => article.topic !== "cats").length === 0).toBeTruthy();
           expect(body.articles.filter(article => article.topic === "cats").length === 1).toBeTruthy();
+        });
+      });
+      test("return a filtered array sorted by the column and order specified", () => {
+        return request(app).get("/api/articles?topic=mitch&sort_by=title&order=desc").then(({body}) => {
+          expect(body.articles).toBeSorted({key: "title", descending: true});
+          expect(body.articles.filter((article) => article.topic !== "mitch").length).toBe(0);
+          expect(body.articles.filter((article) => article.topic === "mitch").length).toBe(12);
         });
       });
       test("return 404 if the topic does not exist", () => {
