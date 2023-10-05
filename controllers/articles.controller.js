@@ -2,7 +2,7 @@ const {
   selectArticle,
   selectArticles,
   selectArticleComments,
-  insertArticleComment, updateArticle
+  insertArticleComment, updateArticle, insertArticle
 } = require("../models/articles.model");
 
 exports.getArticles = (req, res, next) => {
@@ -49,6 +49,16 @@ exports.patchArticle = (req, res, next) => {
   updateArticle(req.params.article_id, req.body)
     .then((article) => {
       res.status(200).send({article});
+    })
+    .catch((error) => {
+      next(error);
+    });
+};
+
+exports.postArticle = (req, res, next) => {
+  insertArticle(req.body)
+    .then((article) => {
+      res.status(201).send({article});
     })
     .catch((error) => {
       next(error);

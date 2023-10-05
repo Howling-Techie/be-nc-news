@@ -368,6 +368,103 @@ describe("/api/articles", () => {
         }).expect(400).then(({body}) => expect(body.msg).toBe("Invalid article_id datatype"));
       });
     });
+    describe("POST /api/articles", () => {
+      test("201 - Respond with the newly created article object", () => {
+        return request(app).post("/api/articles").send({
+          author: "butter_bridge",
+          title: "A new article, for YOU",
+          body: "Here is some contents",
+          topic: "cats",
+          article_img_url: "https://a.slack-edge.com/bv1-10/slack_logo-ebd02d1.svg"
+        }).expect(201).then(({body}) => {
+          expect(body.article).toContainEntries([
+            ["author", "butter_bridge"],
+            ["title", "A new article, for YOU"],
+            ["body", "Here is some contents"],
+            ["topic", "cats"],
+            ["article_img_url", "https://a.slack-edge.com/bv1-10/slack_logo-ebd02d1.svg"]]);
+        });
+      });
+      test("201 - Extra properties are ignored in send body", () => {
+        return request(app).post("/api/articles").send({
+          author: "butter_bridge",
+          title: "A new article, for YOU",
+          body: "Here is some contents",
+          topic: "cats",
+          article_img_url: "https://a.slack-edge.com/bv1-10/slack_logo-ebd02d1.svg",
+          tags: ["first", "tagged"]
+        }).expect(201).then(({body}) => {
+          expect(body.article).not.toContainKey("tags");
+        });
+      });
+      test("201 - Response contains all new article properties", () => {
+        return request(app).post("/api/articles").send({
+          author: "butter_bridge",
+          title: "A new article, for YOU",
+          body: "Here is some contents",
+          topic: "cats",
+          article_img_url: "https://a.slack-edge.com/bv1-10/slack_logo-ebd02d1.svg"
+        }).expect(201).then(({body}) => {
+          expect(body.article).toMatchObject({
+            author: "butter_bridge",
+            title: "A new article, for YOU",
+            body: "Here is some contents",
+            topic: "cats",
+            article_img_url: "https://a.slack-edge.com/bv1-10/slack_logo-ebd02d1.svg",
+            article_id: expect.any(Number),
+            votes: 0,
+            created_at: expect.any(String),
+            comment_count: 0,
+          });
+        });
+      });
+      test("201 - Article contains default image if one is not provided", () => {
+        return request(app).post("/api/articles").send({
+          author: "butter_bridge",
+          title: "A new article, for YOU",
+          body: "Here is some contents",
+          topic: "cats"
+        }).expect(201).then(({body}) => {
+          expect(body.article).toMatchObject({
+            author: "butter_bridge",
+            title: "A new article, for YOU",
+            body: "Here is some contents",
+            topic: "cats",
+            article_img_url: "https://avatars.slack-edge.com/2021-02-08/1724811773957_c6b24cf6ef8cfcca933a_102.png",
+            article_id: expect.any(Number),
+            votes: 0,
+            created_at: expect.any(String),
+            comment_count: 0,
+          });
+        });
+      });
+      test("400 - Reject POST if object is missing parameters", () => {
+        return request(app).post("/api/articles").send({
+          author: "butter_bridge",
+          title: "A new article, for YOU",
+          body: "Here is some contents",
+          article_img_url: "https://a.slack-edge.com/bv1-10/slack_logo-ebd02d1.svg"
+        }).expect(400).then(({body}) => expect(body.msg).toBe("Request missing properties"));
+      });
+      test("404 - Reject POST if the topic cannot be found", () => {
+        return request(app).post("/api/articles").send({
+          author: "butter_bridge",
+          title: "A new article, for YOU",
+          body: "Here is some contents",
+          topic: "dogs",
+          article_img_url: "https://a.slack-edge.com/bv1-10/slack_logo-ebd02d1.svg"
+        }).expect(404).then(({body}) => expect(body.msg).toBe("Topic not found"));
+      });
+      test("404 - Reject POST if the user cannot be found", () => {
+        return request(app).post("/api/articles").send({
+          author: "cheese_bridge",
+          title: "A new article, for YOU",
+          body: "Here is some contents",
+          topic: "cats",
+          article_img_url: "https://a.slack-edge.com/bv1-10/slack_logo-ebd02d1.svg"
+        }).expect(404).then(({body}) => expect(body.msg).toBe("Author not found"));
+      });
+    });
   });
   describe("PATCH", () => {
     describe("PATCH /api/articles/:article_id", () => {

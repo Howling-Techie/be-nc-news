@@ -418,6 +418,111 @@
             "description": "Invalid query parameters"
           }
         }
+      },
+      "post": {
+        "summary": "Post a new article",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "author": {
+                    "type": "string",
+                    "description": "Username posting the article"
+                  },
+                  "title": {
+                    "type": "string",
+                    "description": "The title of the article"
+                  },
+                  "body": {
+                    "type": "string",
+                    "description": "The contents of the article"
+                  },
+                  "topic": {
+                    "type": "string",
+                    "description": "The topic of the article"
+                  },
+                  "article_img_url": {
+                    "type": "string",
+                    "description": "The URL of the image of the article - optional",
+                    "default": "https://avatars.slack-edge.com/2021-02-08/1724811773957_c6b24cf6ef8cfcca933a_102.png"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "The newly created article",
+                  "properties": {
+                    "article_id": {
+                      "type": "integer",
+                      "description": "The unique article ID"
+                    },
+                    "author": {
+                      "type": "string",
+                      "description": "Username of the author"
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "Title of the article"
+                    },
+                    "topic": {
+                      "type": "string",
+                      "description": "Topic this article falls under"
+                    },
+                    "body": {
+                      "type": "string",
+                      "description": "The contents of the article"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "description": "Timestamp of article's creation"
+                    },
+                    "votes": {
+                      "type": "integer",
+                      "description": "Total score of the article's votes"
+                    },
+                    "article_img_url": {
+                      "type": "string",
+                      "description": "URL of the article's image"
+                    },
+                    "comment_count": {
+                      "type": "integer",
+                      "description": "How many comments have been received"
+                    }
+                  }
+                },
+                "example": {
+                  "article_id": 3,
+                  "title": "Eight pug gifs that remind me of mitch",
+                  "topic": "mitch",
+                  "author": "icellusedkars",
+                  "body": "some gifs",
+                  "created_at": "2020-10-11T15:23:00.000Z",
+                  "votes": 0,
+                  "article_img_url": "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+                  "comment_count": 0
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Author or topic not found"
+          },
+          "400": {
+            "description": "Missing properties from body"
+          }
+        }
       }
     },
     "/api/articles/{article_id}": {

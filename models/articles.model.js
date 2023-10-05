@@ -132,3 +132,35 @@ exports.updateArticle = async (article_id, body) => {
     , inc_votes, article_id);
   return (await db.query(query)).rows[0];
 };
+
+exports.insertArticle = async (reqBody) => {
+  const {
+    author,
+    title,
+    body,
+    topic,
+    article_img_url = "https://avatars.slack-edge.com/2021-02-08/1724811773957_c6b24cf6ef8cfcca933a_102.png"
+  } = reqBody;
+  if (!(author && title && body && topic)) {
+    return Promise.reject({status: 400, msg: "Request missing properties"});
+  }
+  if (!(await checkIfExists("topics", "slug", topic))) {
+    return Promise.reject({status: 404, msg: "Topic not found"});
+  }
+  if (!(await checkIfExists("users", "username", author))) {
+    return Promise.reject({status: 404, msg: "Author not found"});
+  }
+
+  const insertQuery = format("INSERT INTO articles (title, topic, author, body, article_img_url) VALUES (%L, %L, %L, %L, %L) RETURNING *;",
+    title, topic, author, body, article_img_url);
+
+  const result = (await db.query(insertQuery)).rows[0];
+
+  return (await db.query(`SELECT a.*, COALESCE(c.comment_count, 0) as comment_count
+                          FROM articles a
+                                   LEFT JOIN (SELECT article_id,
+                                                     CAST(COUNT(comment_id) as INTEGER) as comment_count
+                                              FROM comments
+                                              GROUP BY article_id) c on c.article_id = a.article_id
+                          WHERE a.article_id = $1`, [result.article_id])).rows[0];
+};
