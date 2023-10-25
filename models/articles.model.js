@@ -35,7 +35,7 @@ exports.selectArticles = async (queries) => {
                                                 FROM comments
                                                 GROUP BY article_id) c on c.article_id = a.article_id
                                 ${whereClause}
-                            ORDER BY a.${sort_by} ${order}
+                            ORDER BY ${sort_by} ${order}
                             LIMIT ${limit} OFFSET ${limit * (p - 1)};`)).rows;
 };
 

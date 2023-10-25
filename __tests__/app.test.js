@@ -120,6 +120,11 @@ describe("/api/articles", () => {
                         expect(body.articles).toBeSorted({key: "votes", descending: true});
                     });
                 });
+                test("return an array sorted by the comment count when specified in descending order", () => {
+                    return request(app).get("/api/articles?sort_by=comment_count").then(({body}) => {
+                        expect(body.articles).toBeSorted({key: "comment_count", descending: true});
+                    });
+                });
                 test("return 400 if an invalid order is provided", () => {
                     return request(app).get("/api/articles?order=mixed").expect(400);
                 });
