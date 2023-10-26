@@ -1,6 +1,7 @@
 const db = require("../db/connection");
 const {checkIfExists} = require("./utils.model");
 const format = require("pg-format");
+const jwt = require("jsonwebtoken");
 
 exports.selectArticles = async (queries) => {
     const {topic, sort_by = "created_at", order = "desc", limit = 10, p = 1} = queries;
@@ -92,8 +93,8 @@ exports.insertArticleComment = async (article_id, comment) => {
         return Promise.reject({status: 400, msg: "Invalid article_id datatype"});
     }
 
-    if (!("username" in comment)) {
-        return Promise.reject({status: 400, msg: "Request missing username"});
+    if (!("token" in comment)) {
+        return Promise.reject({status: 400, msg: "Request missing token"});
     }
     if (!("body" in comment)) {
         return Promise.reject({status: 400, msg: "Request missing body"});
@@ -102,12 +103,15 @@ exports.insertArticleComment = async (article_id, comment) => {
     if (!(await checkIfExists("articles", "article_id", article_id))) {
         return Promise.reject({status: 404, msg: "Article not found"});
     }
-    if (!(await checkIfExists("users", "username", comment.username))) {
-        return Promise.reject({status: 404, msg: "User not found"});
+    try {
+        const decoded = jwt.verify(comment.token, process.env.JWT_KEY);
+        const username = decoded.username;
+        return (await db.query(`INSERT INTO comments(article_id, body, author)
+                                VALUES ($1, $2, $3)
+                                RETURNING *;`, [article_id, comment.body, username])).rows[0];
+    } catch {
+        return Promise.reject({status: 401, msg: "Unauthorised"});
     }
-    return (await db.query(`INSERT INTO comments(article_id, body, author)
-                            VALUES ($1, $2, $3)
-                            RETURNING *;`, [article_id, comment.body, comment.username])).rows[0];
 };
 
 exports.updateArticle = async (article_id, body) => {

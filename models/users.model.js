@@ -96,7 +96,7 @@ exports.selectCurrentUser = async (body) => {
         const decoded = jwt.verify(token, process.env.JWT_KEY);
         return await exports.selectUser(decoded.username);
     } catch {
-        return Promise.reject({status: 401, msg: "Unauthorized"});
+        return Promise.reject({status: 401, msg: "Unauthorised"});
     }
 };
 
@@ -117,6 +117,6 @@ exports.refreshCurrentUser = async (body) => {
         };
         return response;
     } catch {
-        return Promise.reject({status: 401, msg: "Unauthorized"});
+        return Promise.reject({status: 401, msg: "Unauthorised"});
     }
 };

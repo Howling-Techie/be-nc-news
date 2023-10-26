@@ -303,8 +303,9 @@ describe("/api/articles", () => {
     describe("POST", () => {
         describe("POST /api/articles/:article_id/comments", () => {
             test("Respond with the newly created comment object", () => {
+                const accessToken = generateToken({username: "securedUser", name: "i_have_a_password"});
                 return request(app).post("/api/articles/1/comments").send({
-                    username: "lurker",
+                    token: accessToken,
                     body: "My first post!"
                 }).expect(201).then(({body}) => {
                     expect(body.comment).toMatchObject({
@@ -312,14 +313,15 @@ describe("/api/articles", () => {
                         comment_id: expect.any(Number),
                         votes: 0,
                         created_at: expect.any(String),
-                        author: "lurker",
+                        author: "securedUser",
                         body: "My first post!",
                     });
                 });
             });
             test("Extra properties are ignored in send body", () => {
+                const accessToken = generateToken({username: "securedUser", name: "i_have_a_password"});
                 return request(app).post("/api/articles/1/comments").send({
-                    username: "lurker",
+                    token: accessToken,
                     body: "I wanted to say more!",
                     originalMessage: "My first post!"
                 }).expect(201).then(({body}) => {
@@ -328,48 +330,53 @@ describe("/api/articles", () => {
                         comment_id: expect.any(Number),
                         votes: 0,
                         created_at: expect.any(String),
-                        author: "lurker",
+                        author: "securedUser",
                         body: "I wanted to say more!",
                     });
                 });
             });
             test("New comment is stored on the database", () => {
+                const accessToken = generateToken({username: "securedUser", name: "i_have_a_password"});
                 return request(app).post("/api/articles/2/comments")
                     .send({
-                        username: "lurker",
+                        token: accessToken,
                         body: "Who wrote this?"
                     }).then(() => {
                         return request(app).get("/api/articles/2/comments")
                             .then(({body}) => {
-                                expect(body.comments.filter((comment) => comment.author === "lurker").length).toBe(1);
+                                expect(body.comments.filter((comment) => comment.author === "securedUser").length).toBe(1);
                             });
                     });
             });
-            test("Respond with 400 if object is missing username", () => {
+            test("Respond with 400 if object is missing a token", () => {
                 return request(app).post("/api/articles/1/comments").send({
                     body: "Send me a DM for deets"
-                }).expect(400).then(({body}) => expect(body.msg).toBe("Request missing username"));
+                }).expect(400).then(({body}) => expect(body.msg).toBe("Request missing token"));
             });
             test("Respond with 400 if object is missing body", () => {
+                const accessToken = generateToken({username: "securedUser", name: "i_have_a_password"});
                 return request(app).post("/api/articles/1/comments").send({
-                    username: "lurker"
+                    token: accessToken
                 }).expect(400).then(({body}) => expect(body.msg).toBe("Request missing body"));
             });
             test("Respond with 404 if the article cannot be found", () => {
+                const accessToken = generateToken({username: "securedUser", name: "i_have_a_password"});
                 return request(app).post("/api/articles/1000/comments").send({
-                    username: "lurker",
+                    token: accessToken,
                     body: "My second post!"
                 }).expect(404).then(({body}) => expect(body.msg).toBe("Article not found"));
             });
-            test("Respond with 404 if the user cannot be found", () => {
+            test("Respond with 401 if the token is expired", () => {
+                const accessToken = generateToken({username: "securedUser", name: "i_have_a_password"}, "0s");
                 return request(app).post("/api/articles/1/comments").send({
-                    username: "newbie",
+                    token: accessToken,
                     body: "hiii"
-                }).expect(404).then(({body}) => expect(body.msg).toBe("User not found"));
+                }).expect(401).then(({body}) => expect(body.msg).toBe("Unauthorised"));
             });
             test("Respond with 400 if the article id is not an integer", () => {
+                const accessToken = generateToken({username: "securedUser", name: "i_have_a_password"});
                 return request(app).post("/api/articles/about_me/comments").send({
-                    username: "lurker",
+                    token: accessToken,
                     body: "My first article"
                 }).expect(400).then(({body}) => expect(body.msg).toBe("Invalid article_id datatype"));
             });
