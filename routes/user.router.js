@@ -2,12 +2,12 @@ const {postUser, signInUser, getCurrentUser, refreshUser} = require("../controll
 
 const userRouter = require("express").Router();
 
-userRouter.route("/").get(getCurrentUser);
+userRouter.route("/").post(getCurrentUser);
 
 userRouter.route("/register").post(postUser);
 
-userRouter.route("/signin").get(signInUser);
+userRouter.route("/signin").post(signInUser);
 
-userRouter.route("/refresh").get(refreshUser);
+userRouter.route("/refresh").post(refreshUser);
 
 module.exports = userRouter;

@@ -742,32 +742,32 @@ describe("api/user", () => {
     });
     describe("GET /api/user/signin", () => {
         test("Return 400 when no body is provided", () => {
-            return request(app).get("/api/user/signin")
+            return request(app).post("/api/user/signin")
                 .send({})
                 .expect(400);
         });
         test("Return 400 when no body is missing required properties", () => {
-            return request(app).get("/api/user/signin")
+            return request(app).post("/api/user/signin")
                 .send({username: "newUser"})
                 .expect(400);
         });
         test("Return 404 when the user does not exists", () => {
-            return request(app).get("/api/user/signin")
+            return request(app).post("/api/user/signin")
                 .send({username: "a_third_user", password: "hunter2"})
                 .expect(404);
         });
         test("Return 401 when the password is wrong", () => {
-            return request(app).get("/api/user/signin")
+            return request(app).post("/api/user/signin")
                 .send({username: "securedUser", password: "hunter1"})
                 .expect(401);
         });
         test("Return 200 on success", () => {
-            return request(app).get("/api/user/signin")
+            return request(app).post("/api/user/signin")
                 .send({username: "securedUser", password: "hunter2"})
                 .expect(200);
         });
         test("On success return a user and JWT access and refresh token", () => {
-            return request(app).get("/api/user/signin")
+            return request(app).post("/api/user/signin")
                 .send({username: "securedUser", password: "hunter2"})
                 .expect(200)
                 .then(({body}) => {
@@ -784,31 +784,31 @@ describe("api/user", () => {
 
     describe("GET /api/user", () => {
         test("Return 400 when no body is provided", () => {
-            return request(app).get("/api/user")
+            return request(app).post("/api/user")
                 .send({})
                 .expect(400);
         });
         test("Return 401 when passed an expired token", () => {
             const accessToken = generateToken({username: "securedUser", name: "i_have_a_password"}, "0s");
-            return request(app).get("/api/user")
+            return request(app).post("/api/user")
                 .send({token: accessToken})
                 .expect(401);
         });
         test("Return 401 when passed an invalid token", () => {
             const accessToken = generateToken({username: "ghosts", name: "i_don't_exist"});
-            return request(app).get("/api/user")
+            return request(app).post("/api/user")
                 .send({token: accessToken})
                 .expect(401);
         });
         test("Return 200 on success", () => {
             const accessToken = generateToken({username: "securedUser", name: "i_have_a_password"});
-            return request(app).get("/api/user")
+            return request(app).post("/api/user")
                 .send({token: accessToken})
                 .expect(200);
         });
         test("On success return a user object", () => {
             const accessToken = generateToken({username: "securedUser", name: "i_have_a_password"});
-            return request(app).get("/api/user")
+            return request(app).post("/api/user")
                 .send({token: accessToken})
                 .expect(200)
                 .then(({body}) => {
@@ -822,31 +822,31 @@ describe("api/user", () => {
 
     describe("GET /api/refresh", () => {
         test("Return 400 when no body is provided", () => {
-            return request(app).get("/api/user/refresh")
+            return request(app).post("/api/user/refresh")
                 .send({})
                 .expect(400);
         });
         test("Return 401 when passed an expired token", () => {
             const refreshToken = generateToken({username: "securedUser"}, "0s");
-            return request(app).get("/api/user/refresh")
+            return request(app).post("/api/user/refresh")
                 .send({token: refreshToken})
                 .expect(401);
         });
         test("Return 401 when passed an invalid token", () => {
             const refreshToken = generateToken({username: "ghosts"});
-            return request(app).get("/api/user/refresh")
+            return request(app).post("/api/user/refresh")
                 .send({token: refreshToken})
                 .expect(401);
         });
         test("Return 200 on success", () => {
             const refreshToken = generateToken({username: "securedUser"});
-            return request(app).get("/api/user/refresh")
+            return request(app).post("/api/user/refresh")
                 .send({token: refreshToken})
                 .expect(200);
         });
         test("On success return a new token object", () => {
             const refreshToken = generateToken({username: "securedUser"});
-            return request(app).get("/api/user/refresh")
+            return request(app).post("/api/user/refresh")
                 .send({token: refreshToken})
                 .expect(200)
                 .then(({body}) => {
