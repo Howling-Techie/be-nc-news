@@ -1,4 +1,11 @@
-const {selectUsers, selectUser, insertUser, signInUser, selectCurrentUser} = require("../models/users.model");
+const {
+    selectUsers,
+    selectUser,
+    insertUser,
+    signInUser,
+    selectCurrentUser,
+    refreshCurrentUser
+} = require("../models/users.model");
 
 exports.getUsers = (req, res, next) => {
     selectUsers()
@@ -44,6 +51,16 @@ exports.getCurrentUser = (req, res, next) => {
     selectCurrentUser(req.body)
         .then((user) => {
             res.status(200).send({user});
+        })
+        .catch((error) => {
+            next(error);
+        });
+};
+
+exports.refreshUser = (req, res, next) => {
+    refreshCurrentUser(req.body)
+        .then((token) => {
+            res.status(200).send(token);
         })
         .catch((error) => {
             next(error);

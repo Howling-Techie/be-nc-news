@@ -812,4 +812,41 @@ describe("api/user", () => {
                 });
         });
     });
+
+    describe("GET /api/refresh", () => {
+        test("Return 400 when no body is provided", () => {
+            return request(app).get("/api/user/refresh")
+                .send({})
+                .expect(400);
+        });
+        test("Return 401 when passed an expired token", () => {
+            const refreshToken = generateToken({username: "securedUser"}, "0s");
+            return request(app).get("/api/user/refresh")
+                .send({token: refreshToken})
+                .expect(401);
+        });
+        test("Return 401 when passed an invalid token", () => {
+            const refreshToken = generateToken({username: "ghosts"});
+            return request(app).get("/api/user/refresh")
+                .send({token: refreshToken})
+                .expect(401);
+        });
+        test("Return 200 on success", () => {
+            const refreshToken = generateToken({username: "securedUser"});
+            return request(app).get("/api/user/refresh")
+                .send({token: refreshToken})
+                .expect(200);
+        });
+        test("On success return a new token object", () => {
+            const refreshToken = generateToken({username: "securedUser"});
+            return request(app).get("/api/user/refresh")
+                .send({token: refreshToken})
+                .expect(200)
+                .then(({body}) => {
+                    expect(body).toHaveProperty("token");
+                    expect(body.token).toHaveProperty("accessToken");
+                    expect(body.token).toHaveProperty("refreshToken");
+                });
+        });
+    });
 });

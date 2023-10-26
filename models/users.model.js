@@ -99,3 +99,24 @@ exports.selectCurrentUser = async (body) => {
         return Promise.reject({status: 401, msg: "Unauthorized"});
     }
 };
+
+exports.refreshCurrentUser = async (body) => {
+    const {token} = body;
+
+    if (!token) {
+        return Promise.reject({status: 400, msg: "No token provided"});
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_KEY);
+        const user = await exports.selectUser(decoded.username);
+        const response = {};
+        response.token = {
+            accessToken: generateToken({username: user.username, name: user.name}),
+            refreshToken: generateToken({username: user.username}, "7d")
+        };
+        return response;
+    } catch {
+        return Promise.reject({status: 401, msg: "Unauthorized"});
+    }
+};
