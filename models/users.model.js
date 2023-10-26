@@ -51,8 +51,9 @@ exports.insertUser = async (body) => {
 
     const response = {};
     response.user = results.rows[0];
-    response.accessToken = generateToken({username: username, name: name});
-    response.refreshToken = generateToken({username: username}, "7d");
+    response.tokens = {};
+    response.tokens.accessToken = generateToken({username: username, name: name});
+    response.tokens.refreshToken = generateToken({username: username}, "7d");
 
     return response;
 };
@@ -75,7 +76,7 @@ exports.signInUser = async (body) => {
         const user = results.rows[0];
         delete user.password;
         response.user = user;
-        response.token = {
+        response.tokens = {
             accessToken: generateToken({username: user.username, name: user.name}),
             refreshToken: generateToken({username: user.username}, "7d")
         };
@@ -113,7 +114,7 @@ exports.refreshCurrentUser = async (body) => {
         const decoded = jwt.verify(token, process.env.JWT_KEY);
         const user = await exports.selectUser(decoded.username);
         const response = {};
-        response.token = {
+        response.tokens = {
             accessToken: generateToken({username: user.username, name: user.name}),
             refreshToken: generateToken({username: user.username}, "7d")
         };

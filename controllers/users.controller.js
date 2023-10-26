@@ -29,8 +29,8 @@ exports.getUser = (req, res, next) => {
 
 exports.postUser = (req, res, next) => {
     insertUser(req.body)
-        .then((token) => {
-            res.status(201).send({token});
+        .then((response) => {
+            res.status(201).send(response);
         })
         .catch((error) => {
             next(error);

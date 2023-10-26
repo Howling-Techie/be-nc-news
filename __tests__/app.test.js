@@ -734,9 +734,13 @@ describe("api/user", () => {
                 .send({username: "anotherNewUser", name: "Another Display Name", password: "hunter2"})
                 .expect(201)
                 .then(({body}) => {
-                    expect(body).toHaveProperty("token");
-                    expect(body.token).toHaveProperty("accessToken");
-                    expect(body.token).toHaveProperty("refreshToken");
+                    expect(body).toHaveProperty("tokens");
+                    expect(body.tokens).toHaveProperty("accessToken");
+                    expect(body.tokens).toHaveProperty("refreshToken");
+                    expect(body).toHaveProperty("user");
+                    expect(body.user).toHaveProperty("username", "anotherNewUser");
+                    expect(body.user).toHaveProperty("name", "Another Display Name");
+                    expect(body.user).toHaveProperty("avatar_url", null);
                 });
         });
     });
@@ -771,9 +775,9 @@ describe("api/user", () => {
                 .send({username: "securedUser", password: "hunter2"})
                 .expect(200)
                 .then(({body}) => {
-                    expect(body).toHaveProperty("token");
-                    expect(body.token).toHaveProperty("accessToken");
-                    expect(body.token).toHaveProperty("refreshToken");
+                    expect(body).toHaveProperty("tokens");
+                    expect(body.tokens).toHaveProperty("accessToken");
+                    expect(body.tokens).toHaveProperty("refreshToken");
                     expect(body).toHaveProperty("user");
                     expect(body.user).toHaveProperty("username");
                     expect(body.user).toHaveProperty("name");
@@ -850,9 +854,9 @@ describe("api/user", () => {
                 .send({token: refreshToken})
                 .expect(200)
                 .then(({body}) => {
-                    expect(body).toHaveProperty("token");
-                    expect(body.token).toHaveProperty("accessToken");
-                    expect(body.token).toHaveProperty("refreshToken");
+                    expect(body).toHaveProperty("tokens");
+                    expect(body.tokens).toHaveProperty("accessToken");
+                    expect(body.tokens).toHaveProperty("refreshToken");
                 });
         });
     });
