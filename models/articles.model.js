@@ -79,12 +79,18 @@ exports.selectArticleComments = async (article_id, queries) => {
     }
 
     const commentResults = await db.query(`
-        SELECT *
-        FROM comments
+        SELECT c.comment_id,
+               c.body,
+               c.article_id,
+               c.author,
+               (CAST(COALESCE(SUM(v.vote), 0) AS int) + c.votes) as votes,
+               c.created_at
+        FROM comments c
+                 LEFT JOIN comment_votes v ON c.comment_id = v.comment_id
         WHERE article_id = $1
+        GROUP BY c.comment_id
         ORDER BY created_at desc
         LIMIT $2 OFFSET $3;`, [article_id, limit, ((p - 1) * limit)]);
-
     return commentResults.rows;
 };
 
@@ -167,4 +173,45 @@ exports.insertArticle = async (reqBody) => {
                                                 FROM comments
                                                 GROUP BY article_id) c on c.article_id = a.article_id
                             WHERE a.article_id = $1`, [result.article_id])).rows[0];
+};
+
+
+exports.updateArticleVotes = async (article_id, body) => {
+    if (Number.isNaN(+article_id)) {
+        return Promise.reject({status: 400, msg: "Invalid article_id datatype"});
+    }
+
+    if (!("token" in body)) {
+        return Promise.reject({status: 400, msg: "Request missing token"});
+    }
+    if (!("vote" in body)) {
+        return Promise.reject({status: 400, msg: "Request missing vote"});
+    }
+
+    const {vote, token} = body;
+    if (Number.isNaN(+vote) || Math.floor(vote) !== vote) {
+        return Promise.reject({status: 400, msg: "Invalid vote amount datatype"});
+    }
+
+    if (!(await checkIfExists("articles", "article_id", article_id))) {
+        return Promise.reject({status: 404, msg: "Article not found"});
+    }
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_KEY);
+        const username = decoded.username;
+        await db.query(`INSERT INTO article_votes(article_id, username, vote)
+                        VALUES ($1, $2, $3)
+                        ON CONFLICT (article_id, username)
+                            DO UPDATE SET vote = $3;`,
+            [article_id, username, vote]);
+        const articleScore = await db.query(`
+            SELECT (CAST(COALESCE(SUM(v.vote), 0) AS int) + c.votes) as votes
+            FROM comments c
+                     LEFT JOIN comment_votes v ON c.comment_id = v.comment_id
+            WHERE article_id = $1
+            GROUP BY c.comment_id;`, [article_id]);
+        return articleScore.rows[0];
+    } catch {
+        return Promise.reject({status: 401, msg: "Unauthorised"});
+    }
 };
