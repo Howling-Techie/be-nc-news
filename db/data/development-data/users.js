@@ -37,7 +37,7 @@ module.exports = [
     },
     {
         username: "securedUser",
-        name: "i_have_a_password",
+        name: "Test User",
         password: "$2b$10$M206yqwOHmwLVmM1hO/fneKr0iV3SMdJstKeLJ/ZV824zCsFhWObS",
         avatar_url:
             "https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_960_720.png"
