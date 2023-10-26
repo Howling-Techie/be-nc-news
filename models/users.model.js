@@ -46,10 +46,11 @@ exports.insertUser = async (body) => {
 
     const hash = hashSync(password, 10);
 
-    const insertQuery = format("INSERT INTO users(username, name, password, avatar_url) VALUES (%L, %L, %L, %L);", username, name, hash, avatar_url);
-    await db.query(insertQuery);
+    const insertQuery = format("INSERT INTO users(username, name, password, avatar_url) VALUES (%L, %L, %L, %L) returning username, name, avatar_url;", username, name, hash, avatar_url);
+    const results = await db.query(insertQuery);
 
     const response = {};
+    response.user = results.rows[0];
     response.accessToken = generateToken({username: username, name: name});
     response.refreshToken = generateToken({username: username}, "7d");
 
@@ -72,6 +73,7 @@ exports.signInUser = async (body) => {
     if (comparison) {
         const response = {};
         const user = results.rows[0];
+        delete user.password;
         response.user = user;
         response.token = {
             accessToken: generateToken({username: user.username, name: user.name}),
