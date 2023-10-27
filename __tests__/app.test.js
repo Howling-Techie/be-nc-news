@@ -969,32 +969,48 @@ describe("api/user", () => {
                 .expect(400);
         });
         test("Return 401 when passed an expired token", () => {
+            const accessToken = generateToken({username: "securedUser"}, "0s");
             const refreshToken = generateToken({username: "securedUser"}, "0s");
             return request(app).post("/api/user/refresh")
-                .send({token: refreshToken})
+                .send({accessToken, refreshToken})
                 .expect(401);
         });
         test("Return 401 when passed an invalid token", () => {
+            const accessToken = generateToken({username: "ghosts"});
             const refreshToken = generateToken({username: "ghosts"});
             return request(app).post("/api/user/refresh")
-                .send({token: refreshToken})
+                .send({accessToken, refreshToken})
                 .expect(401);
         });
         test("Return 200 on success", () => {
+            const accessToken = generateToken({username: "securedUser"});
             const refreshToken = generateToken({username: "securedUser"});
             return request(app).post("/api/user/refresh")
-                .send({token: refreshToken})
+                .send({accessToken, refreshToken})
                 .expect(200);
         });
         test("On success return a new token object", () => {
+            const accessToken = generateToken({username: "securedUser"});
             const refreshToken = generateToken({username: "securedUser"});
             return request(app).post("/api/user/refresh")
-                .send({token: refreshToken})
+                .send({accessToken, refreshToken})
                 .expect(200)
                 .then(({body}) => {
                     expect(body).toHaveProperty("tokens");
                     expect(body.tokens).toHaveProperty("accessToken");
                     expect(body.tokens).toHaveProperty("refreshToken");
+                });
+        });
+        test("Return a new access token when provided an expired access but valid refresh token", () => {
+            const accessToken = generateToken({username: "securedUser"}, "0s");
+            const refreshToken = generateToken({username: "securedUser"});
+            return request(app).post("/api/user/refresh")
+                .send({accessToken, refreshToken})
+                .expect(200)
+                .then(({body}) => {
+                    expect(body).toHaveProperty("tokens");
+                    expect(body.tokens).toHaveProperty("accessToken");
+                    expect(body.tokens.accessToken).not.toBe(accessToken);
                 });
         });
     });
