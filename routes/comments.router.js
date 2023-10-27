@@ -8,7 +8,7 @@ commentRouter
     .patch(patchComment);
 
 commentRouter
-    .route("/:comment_id/vote")
+    .route("/:comment_id/votes")
     .patch(patchCommentVotes);
 
 module.exports = commentRouter;

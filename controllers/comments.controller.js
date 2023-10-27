@@ -22,8 +22,8 @@ exports.patchComment = (req, res, next) => {
 
 exports.patchCommentVotes = (req, res, next) => {
     updateCommentVotes(req.params.comment_id, req.body)
-        .then((votes) => {
-            res.status(200).send(votes);
+        .then((comment) => {
+            res.status(200).send({comment});
         })
         .catch((error) => {
             next(error);

@@ -2,9 +2,8 @@ const {
     selectArticle,
     selectArticles,
     selectArticleComments,
-    insertArticleComment, updateArticle, insertArticle
+    insertArticleComment, updateArticle, insertArticle, updateArticleVotes
 } = require("../models/articles.model");
-const {updateCommentVotes} = require("../models/comments.model");
 
 exports.getArticles = (req, res, next) => {
     selectArticles(req.query)
@@ -67,9 +66,9 @@ exports.postArticle = (req, res, next) => {
 };
 
 exports.patchArticleVotes = (req, res, next) => {
-    updateArticleVotes(req.params.comment_id, req.body)
-        .then((votes) => {
-            res.status(200).send(votes);
+    updateArticleVotes(req.params.article_id, req.body)
+        .then((article) => {
+            res.status(200).send({article});
         })
         .catch((error) => {
             next(error);

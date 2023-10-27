@@ -53,7 +53,7 @@ exports.updateCommentVotes = async (comment_id, body) => {
 
     const {vote, token} = body;
     if (Number.isNaN(+vote) || Math.floor(vote) !== vote) {
-        return Promise.reject({status: 400, msg: "Invalid vote amount datatype"});
+        return Promise.reject({status: 400, msg: "Invalid vote datatype"});
     }
 
     if (!(await checkIfExists("comments", "comment_id", comment_id))) {
@@ -68,10 +68,15 @@ exports.updateCommentVotes = async (comment_id, body) => {
                             DO UPDATE SET vote = $3;`,
             [comment_id, username, vote]);
         const commentScore = await db.query(`
-            SELECT (CAST(COALESCE(SUM(v.vote), 0) AS int) + c.votes) as votes
+            SELECT c.comment_id,
+                   c.body,
+                   (CAST(COALESCE(SUM(v.vote), 0) AS int) + c.votes) as votes,
+                   c.author,
+                   c.article_id,
+                   c.created_at
             FROM comments c
                      LEFT JOIN comment_votes v ON c.comment_id = v.comment_id
-            WHERE article_id = $1
+            WHERE c.comment_id = $1
             GROUP BY c.comment_id;`, [comment_id]);
         return commentScore.rows[0];
     } catch {

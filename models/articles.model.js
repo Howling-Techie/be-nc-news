@@ -27,15 +27,17 @@ exports.selectArticles = async (queries) => {
                                    a.article_id,
                                    topic,
                                    created_at,
-                                   votes,
+                                   (CAST(COALESCE(SUM(v.vote), 0) AS int) + a.votes) as votes,
                                    article_img_url,
-                                   COALESCE(c.comment_count, 0) as comment_count
+                                   COALESCE(c.comment_count, 0)                      as comment_count
                             FROM articles a
                                      LEFT JOIN (SELECT article_id,
                                                        CAST(COUNT(comment_id) as INTEGER) as comment_count
                                                 FROM comments
                                                 GROUP BY article_id) c on c.article_id = a.article_id
+                                     LEFT JOIN article_votes v ON a.article_id = v.article_id
                                 ${whereClause}
+                            GROUP BY a.article_id, c.comment_count
                             ORDER BY ${sort_by} ${order}
                             LIMIT ${limit} OFFSET ${limit * (p - 1)};`)).rows;
 };
@@ -44,13 +46,23 @@ exports.selectArticle = async (article_id) => {
     if (Number.isNaN(+article_id)) {
         return Promise.reject({status: 400, msg: "Invalid article_id datatype"});
     }
-    const results = await db.query(`SELECT a.*, COALESCE(c.comment_count, 0) as comment_count
+    const results = await db.query(`SELECT a.article_id,
+                                           a.article_img_url,
+                                           a.title,
+                                           a.topic,
+                                           a.author,
+                                           a.body,
+                                           a.created_at,
+                                           (CAST(COALESCE(SUM(v.vote), 0) AS int) + a.votes) as votes,
+                                           COALESCE(c.comment_count, 0)                      as comment_count
                                     FROM articles a
                                              LEFT JOIN (SELECT article_id,
                                                                CAST(COUNT(comment_id) as INTEGER) as comment_count
                                                         FROM comments
                                                         GROUP BY article_id) c on c.article_id = a.article_id
-                                    WHERE a.article_id = $1`, [article_id]);
+                                             LEFT JOIN article_votes v ON a.article_id = v.article_id
+                                    WHERE a.article_id = $1
+                                    GROUP BY a.article_id, c.comment_count`, [article_id]);
 
     if (results.rows.length === 0) {
         return Promise.reject({status: 404, msg: "Article not found"});
@@ -190,7 +202,7 @@ exports.updateArticleVotes = async (article_id, body) => {
 
     const {vote, token} = body;
     if (Number.isNaN(+vote) || Math.floor(vote) !== vote) {
-        return Promise.reject({status: 400, msg: "Invalid vote amount datatype"});
+        return Promise.reject({status: 400, msg: "Invalid vote datatype"});
     }
 
     if (!(await checkIfExists("articles", "article_id", article_id))) {
@@ -204,13 +216,7 @@ exports.updateArticleVotes = async (article_id, body) => {
                         ON CONFLICT (article_id, username)
                             DO UPDATE SET vote = $3;`,
             [article_id, username, vote]);
-        const articleScore = await db.query(`
-            SELECT (CAST(COALESCE(SUM(v.vote), 0) AS int) + c.votes) as votes
-            FROM comments c
-                     LEFT JOIN comment_votes v ON c.comment_id = v.comment_id
-            WHERE article_id = $1
-            GROUP BY c.comment_id;`, [article_id]);
-        return articleScore.rows[0];
+        return await exports.selectArticle(article_id);
     } catch {
         return Promise.reject({status: 401, msg: "Unauthorised"});
     }

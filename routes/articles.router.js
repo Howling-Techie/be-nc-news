@@ -19,7 +19,7 @@ articleRouter
     .patch(patchArticle);
 
 articleRouter
-    .route("/:article_id/vote")
+    .route("/:article_id/votes")
     .patch(patchArticleVotes);
 
 articleRouter
