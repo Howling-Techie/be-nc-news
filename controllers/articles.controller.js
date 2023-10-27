@@ -16,7 +16,7 @@ exports.getArticles = (req, res, next) => {
 };
 
 exports.getArticle = (req, res, next) => {
-    selectArticle(req.params.article_id)
+    selectArticle(req.params.article_id, req.headers)
         .then((article) => {
             res.status(200).send({article});
         })
@@ -26,7 +26,7 @@ exports.getArticle = (req, res, next) => {
 };
 
 exports.getArticleComments = (req, res, next) => {
-    selectArticleComments(req.params.article_id, req.query)
+    selectArticleComments(req.params.article_id, req.query, req.headers)
         .then((comments) => {
             res.status(200).send({comments});
         })

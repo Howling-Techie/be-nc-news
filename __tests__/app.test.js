@@ -201,9 +201,16 @@ describe("/api/articles", () => {
                     });
                 });
             });
+
             test("return an article with a comment count", () => {
                 return request(app).get("/api/articles/3").then(({body}) => {
                     expect(body.article).toHaveProperty("comment_count", 2);
+                });
+            });
+            test("return an article with a user's vote if passed a token", () => {
+                const accessToken = generateToken({username: "securedUser", name: "i_have_a_password"});
+                return request(app).get("/api/articles/3").set("authorization", accessToken).then(({body}) => {
+                    expect(body.article).toHaveProperty("user_vote", 0);
                 });
             });
             test("return 404 if article not found", () => {
@@ -259,7 +266,21 @@ describe("/api/articles", () => {
                         votes: 1,
                         author: "butter_bridge",
                         article_id: 6,
-                        created_at: "2020-10-11T15:23:00.000Z"
+                        created_at: "2020-10-11T15:23:00.000Z",
+                    }];
+                    expect(body.comments).toMatchObject(result);
+                });
+            });
+            test("return comments with a user's vote if passed a token", () => {
+                const accessToken = generateToken({username: "securedUser", name: "i_have_a_password"});
+                return request(app).get("/api/articles/6/comments").set("authorization", accessToken).then(({body}) => {
+                    const result = [{
+                        body: "This is a bad article name",
+                        votes: 1,
+                        author: "butter_bridge",
+                        article_id: 6,
+                        created_at: "2020-10-11T15:23:00.000Z",
+                        user_vote: 0
                     }];
                     expect(body.comments).toMatchObject(result);
                 });

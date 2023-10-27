@@ -42,27 +42,58 @@ exports.selectArticles = async (queries) => {
                             LIMIT ${limit} OFFSET ${limit * (p - 1)};`)).rows;
 };
 
-exports.selectArticle = async (article_id) => {
+exports.selectArticle = async (article_id, headers = {}) => {
     if (Number.isNaN(+article_id)) {
         return Promise.reject({status: 400, msg: "Invalid article_id datatype"});
     }
-    const results = await db.query(`SELECT a.article_id,
-                                           a.article_img_url,
-                                           a.title,
-                                           a.topic,
-                                           a.author,
-                                           a.body,
-                                           a.created_at,
-                                           (CAST(COALESCE(SUM(v.vote), 0) AS int) + a.votes) as votes,
-                                           COALESCE(c.comment_count, 0)                      as comment_count
-                                    FROM articles a
-                                             LEFT JOIN (SELECT article_id,
-                                                               CAST(COUNT(comment_id) as INTEGER) as comment_count
-                                                        FROM comments
-                                                        GROUP BY article_id) c on c.article_id = a.article_id
-                                             LEFT JOIN article_votes v ON a.article_id = v.article_id
-                                    WHERE a.article_id = $1
-                                    GROUP BY a.article_id, c.comment_count`, [article_id]);
+    const token = headers["authorization"];
+    let results = {};
+    if (token) {
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_KEY);
+            const username = decoded.username;
+            results = await db.query(`SELECT a.article_id,
+                                             a.article_img_url,
+                                             a.title,
+                                             a.topic,
+                                             a.author,
+                                             a.body,
+                                             a.created_at,
+                                             (CAST(COALESCE(SUM(v.vote), 0) AS int) + a.votes) as votes,
+                                             COALESCE(c.comment_count, 0)                      as comment_count,
+                                             CAST(COALESCE(uv.vote, 0) AS int)                 as user_vote
+                                      FROM articles a
+                                               LEFT JOIN (SELECT article_id,
+                                                                 CAST(COUNT(comment_id) as INTEGER) as comment_count
+                                                          FROM comments
+                                                          GROUP BY article_id) c on c.article_id = a.article_id
+                                               LEFT JOIN article_votes v ON a.article_id = v.article_id
+                                               LEFT JOIN (SELECT article_id, vote FROM article_votes WHERE username = $2) uv
+                                                         ON a.article_id = uv.article_id
+                                      WHERE a.article_id = $1
+                                      GROUP BY a.article_id, c.comment_count, uv.vote`, [article_id, username]);
+        } catch {
+            return Promise.reject({status: 401, msg: "Unauthorised"});
+        }
+    } else {
+        results = await db.query(`SELECT a.article_id,
+                                         a.article_img_url,
+                                         a.title,
+                                         a.topic,
+                                         a.author,
+                                         a.body,
+                                         a.created_at,
+                                         (CAST(COALESCE(SUM(v.vote), 0) AS int) + a.votes) as votes,
+                                         COALESCE(c.comment_count, 0)                      as comment_count
+                                  FROM articles a
+                                           LEFT JOIN (SELECT article_id,
+                                                             CAST(COUNT(comment_id) as INTEGER) as comment_count
+                                                      FROM comments
+                                                      GROUP BY article_id) c on c.article_id = a.article_id
+                                           LEFT JOIN article_votes v ON a.article_id = v.article_id
+                                  WHERE a.article_id = $1
+                                  GROUP BY a.article_id, c.comment_count`, [article_id]);
+    }
 
     if (results.rows.length === 0) {
         return Promise.reject({status: 404, msg: "Article not found"});
@@ -70,7 +101,7 @@ exports.selectArticle = async (article_id) => {
     return results.rows[0];
 };
 
-exports.selectArticleComments = async (article_id, queries) => {
+exports.selectArticleComments = async (article_id, queries, headers = {}) => {
     const {limit = 10, p = 1} = queries;
     if (Number.isNaN(+limit) || limit <= 0 || !Number.isInteger(+limit)) {
         return Promise.reject({status: 400, msg: "Invalid limit datatype"});
@@ -90,20 +121,47 @@ exports.selectArticleComments = async (article_id, queries) => {
         return Promise.reject({status: 404, msg: "Article not found"});
     }
 
-    const commentResults = await db.query(`
-        SELECT c.comment_id,
-               c.body,
-               c.article_id,
-               c.author,
-               (CAST(COALESCE(SUM(v.vote), 0) AS int) + c.votes) as votes,
-               c.created_at
-        FROM comments c
-                 LEFT JOIN comment_votes v ON c.comment_id = v.comment_id
-        WHERE article_id = $1
-        GROUP BY c.comment_id
-        ORDER BY created_at desc
-        LIMIT $2 OFFSET $3;`, [article_id, limit, ((p - 1) * limit)]);
-    return commentResults.rows;
+    const token = headers["authorization"];
+    if (token) {
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_KEY);
+            const username = decoded.username;
+            const commentResults = await db.query(`
+                SELECT c.comment_id,
+                       c.body,
+                       c.article_id,
+                       c.author,
+                       (CAST(COALESCE(SUM(v.vote), 0) AS int) + c.votes) as votes,
+                       c.created_at,
+                       CAST(COALESCE(uv.vote, 0) AS int)                 as user_vote
+                FROM comments c
+                         LEFT JOIN comment_votes v ON c.comment_id = v.comment_id
+                         LEFT JOIN (SELECT comment_id, vote FROM comment_votes WHERE username = $4) uv
+                                   ON c.comment_id = uv.comment_id
+                WHERE article_id = $1
+                GROUP BY c.comment_id, uv.vote
+                ORDER BY created_at desc
+                LIMIT $2 OFFSET $3;`, [article_id, limit, ((p - 1) * limit), username]);
+            return commentResults.rows;
+        } catch {
+            return Promise.reject({status: 401, msg: "Unauthorised"});
+        }
+    } else {
+        const commentResults = await db.query(`
+            SELECT c.comment_id,
+                   c.body,
+                   c.article_id,
+                   c.author,
+                   (CAST(COALESCE(SUM(v.vote), 0) AS int) + c.votes) as votes,
+                   c.created_at
+            FROM comments c
+                     LEFT JOIN comment_votes v ON c.comment_id = v.comment_id
+            WHERE article_id = $1
+            GROUP BY c.comment_id
+            ORDER BY created_at desc
+            LIMIT $2 OFFSET $3;`, [article_id, limit, ((p - 1) * limit)]);
+        return commentResults.rows;
+    }
 };
 
 exports.insertArticleComment = async (article_id, comment) => {
@@ -217,7 +275,8 @@ exports.updateArticleVotes = async (article_id, body) => {
                             DO UPDATE SET vote = $3;`,
             [article_id, username, vote]);
         return await exports.selectArticle(article_id);
-    } catch {
+    } catch (err) {
+        console.log(err);
         return Promise.reject({status: 401, msg: "Unauthorised"});
     }
 };
